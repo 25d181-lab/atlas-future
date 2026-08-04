@@ -80,8 +80,7 @@ function AtlasPage() {
       </header>
 
       <p className="mb-6 rounded-xl border border-border bg-surface-2/40 px-4 py-2.5 text-xs text-muted-foreground">
-        <span className="font-medium text-gold">“The farmer doesn't operate AI. AI works for the farmer.”</span>{" "}
-        · Demo mode: all market, warehouse, weather and logistics data is <span className="text-foreground">simulated</span> with realistic Karnataka figures.
+        <span className="font-medium text-gold">{tr("quote")}</span> · {tr("demoNote")}
       </p>
 
       {view === "farmer" ? (
