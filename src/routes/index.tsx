@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "ATLAS — Decision Intelligence for Indian Agriculture" },
       {
         property: "og:description",
-        content: "One voice note in, a complete executed selling plan out. The farmer doesn't operate AI — AI works for the farmer.",
+        content: "ATLAS is an AI digital workforce for farmers: one WhatsApp voice note triggers crop health, market, negotiation, warehouse, logistics and insurance agents.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -77,19 +77,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "ATLAS — AI Digital Workforce for Farmers" },
+      { title: "ATLAS — Decision Intelligence for Indian Agriculture" },
       {
         name: "description",
-        content: "One WhatsApp voice note triggers a multi-agent AI workforce that sells, stores, ships and insures a farmer's harvest.",
+        content: "ATLAS is an AI digital workforce for farmers: one WhatsApp voice note triggers crop health, market, negotiation, warehouse, logistics and insurance agents.",
       },
       { name: "author", content: "ATLAS" },
-      { property: "og:title", content: "ATLAS — AI Digital Workforce for Farmers" },
+      { property: "og:title", content: "ATLAS — Decision Intelligence for Indian Agriculture" },
       {
         property: "og:description",
-        content: "The farmer doesn't operate AI. AI works for the farmer.",
+        content: "ATLAS is an AI digital workforce for farmers: one WhatsApp voice note triggers crop health, market, negotiation, warehouse, logistics and insurance agents.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "ATLAS — Decision Intelligence for Indian Agriculture" },
+      { name: "twitter:description", content: "ATLAS is an AI digital workforce for farmers: one WhatsApp voice note triggers crop health, market, negotiation, warehouse, logistics and insurance agents." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4d21f585-e307-46e4-98e7-a2526b792ade" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/4d21f585-e307-46e4-98e7-a2526b792ade" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
