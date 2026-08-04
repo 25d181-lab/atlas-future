@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, CheckCheck, Mic, Send, Square } from "lucide-react";
+import { CheckCheck, Loader2, Mic, Send, Square } from "lucide-react";
+import { Check } from "lucide-react";
 import { useAtlas } from "@/lib/atlas-store";
-
-const SUGGESTIONS = [
-  "I harvested 2 tons of tomatoes in Vemagal",
-  "1.2 tonnes tomato ready in Sugatur",
-  "3 tons of ragi at Malur",
-];
+import { useI18n, useT, LANGUAGES } from "@/lib/i18n";
+import { blobToBase64, startRecording, type Recorder } from "@/lib/wav";
+import { transcribeAudio } from "@/lib/transcribe.functions";
 
 function Waveform({ active }: { active: boolean }) {
   return (
@@ -30,10 +28,16 @@ function Waveform({ active }: { active: boolean }) {
 
 export function ChatPanel() {
   const { messages, phase, send, approve, reset } = useAtlas();
+  const t = useT();
+  const lang = useI18n((s) => s.lang);
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
+  const recorderRef = useRef<Recorder | null>(null);
+
+  const suggestions = [t("s1"), t("s2"), t("s3")];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -42,7 +46,7 @@ export function ChatPanel() {
   const submit = (value: string, voice = false) => {
     const trimmed = value.trim();
     if (!trimmed) return;
-    if (phase === "awaiting" && /^(yes|haudu|ok|proceed|ha|sari)/i.test(trimmed)) {
+    if (phase === "awaiting" && /^(yes|haudu|ha|ok|proceed|sari|ಹೌದು|हाँ|हां|ஆம்|అవును)/i.test(trimmed)) {
       approve();
       setText("");
       return;
@@ -51,39 +55,44 @@ export function ChatPanel() {
     setText("");
   };
 
-  const toggleMic = () => {
-    const SR =
-      typeof window !== "undefined" &&
-      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  const stopAndTranscribe = async () => {
+    const recorder = recorderRef.current;
+    recorderRef.current = null;
+    setListening(false);
+    if (!recorder) return;
 
-    if (!SR) {
-      // Graceful demo fallback: simulate a voice note.
-      setListening(true);
-      setTimeout(() => {
-        setListening(false);
-        submit(SUGGESTIONS[0]!, true);
-      }, 2200);
+    const blob = await recorder.stop();
+    if (blob.size < 4096) {
+      setError(t("tooShort"));
       return;
     }
+    setTranscribing(true);
+    try {
+      const audioBase64 = await blobToBase64(blob);
+      const stt = LANGUAGES.find((l) => l.code === lang)?.stt;
+      const result = await transcribeAudio({ data: { audioBase64, language: stt } });
+      if (result.text) submit(result.text, true);
+      else setError(t("tooShort"));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Transcription failed.");
+    } finally {
+      setTranscribing(false);
+    }
+  };
 
+  const toggleMic = async () => {
+    setError(null);
+    if (transcribing) return;
     if (listening) {
-      recognitionRef.current?.stop();
-      setListening(false);
+      await stopAndTranscribe();
       return;
     }
-
-    const recognition = new SR();
-    recognition.lang = "en-IN";
-    recognition.interimResults = false;
-    recognition.onresult = (event: any) => {
-      const transcript = event.results?.[0]?.[0]?.transcript ?? "";
-      if (transcript) submit(transcript, true);
-    };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
-    recognitionRef.current = recognition;
-    recognition.start();
-    setListening(true);
+    try {
+      recorderRef.current = await startRecording();
+      setListening(true);
+    } catch {
+      setError(t("micDenied"));
+    }
   };
 
   return (
@@ -91,14 +100,14 @@ export function ChatPanel() {
       <header className="flex items-center gap-3 border-b border-border bg-surface-2/60 px-4 py-3">
         <div className="grid size-10 place-items-center rounded-full bg-whatsapp/20 text-lg">🌾</div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">ATLAS Assistant</p>
-          <p className="text-xs text-leaf">online · WhatsApp (simulated)</p>
+          <p className="truncate text-sm font-semibold">{t("assistant")}</p>
+          <p className="text-xs text-leaf">{t("online")}</p>
         </div>
         <button
           onClick={reset}
           className="ml-auto rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition hover:text-foreground"
         >
-          New chat
+          {t("newChat")}
         </button>
       </header>
 
@@ -122,7 +131,7 @@ export function ChatPanel() {
                   <div className="mb-2 flex items-center gap-2 text-leaf">
                     <Mic className="size-4" />
                     <Waveform active={false} />
-                    <span className="text-[11px] text-muted-foreground">0:07</span>
+                    <span className="text-[11px] text-muted-foreground">{t("voiceNote")}</span>
                   </div>
                 )}
                 {m.text}
@@ -135,6 +144,21 @@ export function ChatPanel() {
           ))}
         </AnimatePresence>
 
+        {transcribing && (
+          <div className="flex justify-end">
+            <div className="flex items-center gap-2 rounded-2xl rounded-br-sm bg-whatsapp/20 px-3.5 py-2.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin text-leaf" />
+              {t("transcribing")}
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <p className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {error}
+          </p>
+        )}
+
         {phase === "running" && (
           <div className="flex justify-start">
             <div className="flex items-center gap-2 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-3">
@@ -146,7 +170,7 @@ export function ChatPanel() {
                   transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.18 }}
                 />
               ))}
-              <span className="text-xs text-muted-foreground">ATLAS agents are working…</span>
+              <span className="text-xs text-muted-foreground">{t("working")}</span>
             </div>
           </div>
         )}
@@ -157,13 +181,13 @@ export function ChatPanel() {
               onClick={approve}
               className="flex-1 rounded-xl bg-leaf px-4 py-2.5 text-sm font-semibold text-accent-foreground shadow-glow-leaf transition hover:brightness-110"
             >
-              <Check className="mr-1 inline size-4" /> Yes, proceed
+              <Check className="mr-1 inline size-4" /> {t("yesProceed")}
             </button>
             <button
               onClick={reset}
               className="rounded-xl border border-border px-4 py-2.5 text-sm text-muted-foreground transition hover:text-foreground"
             >
-              Not now
+              {t("notNow")}
             </button>
           </motion.div>
         )}
@@ -171,7 +195,7 @@ export function ChatPanel() {
 
       {phase === "idle" && (
         <div className="flex flex-wrap gap-2 px-4 pb-2">
-          {SUGGESTIONS.map((s) => (
+          {suggestions.map((s) => (
             <button
               key={s}
               onClick={() => submit(s)}
@@ -194,30 +218,37 @@ export function ChatPanel() {
           <div className="flex flex-1 items-center gap-3 rounded-full bg-background/60 px-4 py-2">
             <span className="size-2 animate-pulse rounded-full bg-destructive" />
             <Waveform active />
-            <span className="text-xs text-muted-foreground">Recording…</span>
+            <span className="truncate text-xs text-muted-foreground">{t("recording")}</span>
           </div>
         ) : (
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={phase === "awaiting" ? 'Type "Yes" to confirm' : "Type or hold the mic…"}
+            placeholder={phase === "awaiting" ? t("typeYes") : t("typeOrMic")}
             className="flex-1 rounded-full bg-background/60 px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-gold/50"
           />
         )}
         <button
           type="button"
           onClick={toggleMic}
-          className={`grid size-10 shrink-0 place-items-center rounded-full transition ${
+          disabled={transcribing}
+          className={`grid size-10 shrink-0 place-items-center rounded-full transition disabled:opacity-60 ${
             listening ? "bg-destructive text-destructive-foreground" : "bg-leaf/20 text-leaf hover:bg-leaf/30"
           }`}
-          aria-label="Voice note"
+          aria-label={t("voiceNote")}
         >
-          {listening ? <Square className="size-4" /> : <Mic className="size-4" />}
+          {transcribing ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : listening ? (
+            <Square className="size-4" />
+          ) : (
+            <Mic className="size-4" />
+          )}
         </button>
         <button
           type="submit"
           className="grid size-10 shrink-0 place-items-center rounded-full bg-gold text-primary-foreground transition hover:brightness-110"
-          aria-label="Send"
+          aria-label={t("send")}
         >
           <Send className="size-4" />
         </button>
