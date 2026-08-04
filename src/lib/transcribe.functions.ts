@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 
-type TranscribeInput = { audioBase64: string; language?: string };
+type TranscribeInput = { audioBase64: string; language?: string | undefined };
 
 function base64ToBytes(b64: string): Uint8Array {
   const binary = atob(b64);
@@ -17,9 +17,10 @@ export const transcribeAudio = createServerFn({ method: "POST" })
     if (data.audioBase64.length > 12_000_000) {
       throw new Error("Recording is too long — keep it under a minute.");
     }
-    return {
-      audioBase64: data.audioBase64,
-      language: typeof data.language === "string" ? data.language : undefined,
+    const language = typeof data.language === "string" ? data.language : undefined;
+    return { audioBase64: data.audioBase64, language } as {
+      audioBase64: string;
+      language?: string | undefined;
     };
   })
   .handler(async ({ data }) => {

@@ -9,6 +9,8 @@ import { WarehousePanel } from "@/components/atlas/WarehousePanel";
 import { ConfirmationCard } from "@/components/atlas/ConfirmationCard";
 import { FarmerProfile } from "@/components/atlas/FarmerProfile";
 import { AdminDashboard } from "@/components/atlas/AdminDashboard";
+import { LanguageSwitcher } from "@/components/atlas/LanguageSwitcher";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,6 +37,7 @@ type View = "farmer" | "admin";
 
 function AtlasPage() {
   const [view, setView] = useState<View>("farmer");
+  const tr = useT();
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-[1400px] px-4 py-6 sm:px-6 lg:py-8">
@@ -44,16 +47,18 @@ function AtlasPage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gradient-gold sm:text-3xl">ATLAS</h1>
             <p className="text-xs text-muted-foreground sm:text-sm">
-              Decision Intelligence Infrastructure for Agriculture
+              {tr("tagline")}
             </p>
           </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 rounded-full border border-border bg-surface-2/60 p-1">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+        <LanguageSwitcher />
+        <div className="flex items-center gap-2 rounded-full border border-border bg-surface-2/60 p-1">
           {(
             [
-              { id: "farmer", label: "Farmer View", icon: Sprout },
-              { id: "admin", label: "FPO / Admin", icon: Building2 },
+              { id: "farmer", label: tr("farmerView"), icon: Sprout },
+              { id: "admin", label: tr("adminView"), icon: Building2 },
             ] as const
           ).map((t) => (
             <button
@@ -70,6 +75,7 @@ function AtlasPage() {
               <span className="relative">{t.label}</span>
             </button>
           ))}
+        </div>
         </div>
       </header>
 
