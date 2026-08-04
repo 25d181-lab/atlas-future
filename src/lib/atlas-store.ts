@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { AGENTS, buildPlan, parseRequest, type AgentKey, type AtlasPlan } from "./atlas-agents";
 import { inr } from "./atlas-data";
+import { t } from "./i18n";
 
 export type ChatMessage = {
   id: string;
@@ -42,6 +43,8 @@ type AtlasState = {
   reset: () => void;
 };
 
+const translateGreeting = () => t("greeting");
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const useAtlas = create<AtlasState>((set, get) => ({
@@ -49,7 +52,7 @@ export const useAtlas = create<AtlasState>((set, get) => ({
     {
       id: "m0",
       from: "atlas",
-      text: "Namaskara Ramesh 🙏 I am ATLAS. Send me a voice note or a message when your harvest is ready — I'll handle the rest.",
+      text: translateGreeting(),
       time: now(),
     },
   ],
@@ -71,7 +74,11 @@ export const useAtlas = create<AtlasState>((set, get) => ({
         {
           id: crypto.randomUUID(),
           from: "atlas",
-          text: `Got it — ${request.tonnes} t of ${request.crop.toLowerCase()} in ${request.village}. Putting my team to work now…`,
+          text: t("gotIt", {
+            tonnes: request.tonnes,
+            crop: request.crop.toLowerCase(),
+            village: request.village,
+          }),
           time: now(),
         },
       ],
@@ -103,7 +110,7 @@ export const useAtlas = create<AtlasState>((set, get) => ({
           {
             id: crypto.randomUUID(),
             from: "atlas",
-            text: `${plan.summary}\n\nShall I proceed? Reply "Yes" and I will lock everything.`,
+            text: `${plan.summary}\n\n${t("shallProceed")}`,
             time: now(),
           },
         ],
@@ -118,7 +125,7 @@ export const useAtlas = create<AtlasState>((set, get) => ({
       phase: "confirmed",
       messages: [
         ...s.messages,
-        { id: crypto.randomUUID(), from: "farmer", text: "Yes, go ahead ✅", time: now(), voice: true },
+        { id: crypto.randomUUID(), from: "farmer", text: t("approved"), time: now(), voice: true },
         {
           id: crypto.randomUUID(),
           from: "atlas",
@@ -151,7 +158,7 @@ export const useAtlas = create<AtlasState>((set, get) => ({
         {
           id: crypto.randomUUID(),
           from: "atlas",
-          text: "Ready for your next harvest. Just tell me what you picked and where.",
+          text: t("readyNext"),
           time: now(),
         },
       ],
