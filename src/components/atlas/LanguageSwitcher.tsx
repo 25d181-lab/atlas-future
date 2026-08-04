@@ -1,5 +1,6 @@
 import { Languages } from "lucide-react";
 import { LANGUAGES, useI18n, type Lang } from "@/lib/i18n";
+import { useAtlas } from "@/lib/atlas-store";
 
 export function LanguageSwitcher() {
   const lang = useI18n((s) => s.lang);
@@ -10,7 +11,10 @@ export function LanguageSwitcher() {
       <Languages className="size-4 text-gold" />
       <select
         value={lang}
-        onChange={(e) => setLang(e.target.value as Lang)}
+        onChange={(e) => {
+          setLang(e.target.value as Lang);
+          if (useAtlas.getState().phase === "idle") useAtlas.getState().reset();
+        }}
         className="bg-transparent text-xs font-medium text-foreground outline-none"
         aria-label="Language"
       >
