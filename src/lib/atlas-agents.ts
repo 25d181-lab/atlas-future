@@ -80,14 +80,14 @@ export function parseRequest(text: string): ParsedRequest {
   const qtyMatch = lower.match(/(\d+(?:\.\d+)?)\s*(ton|tonne|tons|tonnes|t\b|quintal|kg)/);
   let tonnes = 2;
   if (qtyMatch) {
-    const n = parseFloat(qtyMatch[1]);
-    const unit = qtyMatch[2];
+    const n = parseFloat(qtyMatch[1]!);
+    const unit = qtyMatch[2]!;
     tonnes = unit.startsWith("kg") ? n / 1000 : unit.startsWith("quintal") ? n / 10 : n;
   }
   const cropHit = CROPS.find((c) => lower.includes(c));
-  const crop = cropHit ? (cropHit === "tomatoes" ? "Tomato" : cropHit[0].toUpperCase() + cropHit.slice(1)) : "Tomato";
+  const crop = cropHit ? (cropHit === "tomatoes" ? "Tomato" : cropHit[0]!.toUpperCase() + cropHit.slice(1)) : "Tomato";
   const villageMatch = text.match(/\b(?:in|at|from|near)\s+([A-Za-z][A-Za-z\s]{2,24})/i);
-  const village = villageMatch ? villageMatch[1].trim().replace(/\s+(village|today|now)$/i, "") : "Vemagal, Kolar";
+  const village = villageMatch ? villageMatch[1]!.trim().replace(/\s+(village|today|now)$/i, "") : "Vemagal, Kolar";
   return { crop, tonnes: Math.max(0.1, tonnes), village, raw: text };
 }
 
@@ -99,17 +99,17 @@ export function buildPlan(request: ParsedRequest): AtlasPlan {
     m,
     score: m.pricePerKg * 3 + m.trend * 1.6 + m.demandIndex * 0.08 - m.distanceKm * 0.045,
   })).sort((a, b) => b.score - a.score);
-  const mandi = scored[0].m;
-  const runnerUp = scored[1].m;
+  const mandi = scored[0]!.m;
+  const runnerUp = scored[1]!.m;
 
   const warehouse =
     WAREHOUSES.filter((w) => w.capacityTonnes - w.usedTonnes >= request.tonnes && w.type !== "Ambient").sort(
       (a, b) => a.distanceKm - b.distanceKm,
-    )[0] ?? WAREHOUSES[0];
+    )[0] ?? WAREHOUSES[0]!;
 
   const transporter =
     TRANSPORTERS.filter((t) => t.capacityTonnes >= request.tonnes).sort((a, b) => a.fare - b.fare)[0] ??
-    TRANSPORTERS[TRANSPORTERS.length - 1];
+    TRANSPORTERS[TRANSPORTERS.length - 1]!;
 
   const gradeShare = 0.86;
   const baselinePerKg = mandi.pricePerKg;
@@ -169,7 +169,7 @@ export function buildPlan(request: ParsedRequest): AtlasPlan {
       key: "warehouse",
       headline: `${request.tonnes} t held at ${warehouse.name} (${warehouse.distanceKm} km)`,
       reasoning: [
-        `Nearest ambient store (Malur) is at ${Math.round((WAREHOUSES[2].usedTonnes / WAREHOUSES[2].capacityTonnes) * 100)}% capacity — rejected.`,
+        `Nearest ambient store (Malur) is at ${Math.round((WAREHOUSES[2]!.usedTonnes / WAREHOUSES[2]!.capacityTonnes) * 100)}% capacity — rejected.`,
         `${warehouse.name} has ${(warehouse.capacityTonnes - warehouse.usedTonnes).toFixed(0)} t free at ₹${warehouse.ratePerTonneDay}/t/day.`,
         `Reserved for ${storageDays} days as a price buffer if the mandi rate dips on arrival.`,
       ],
@@ -242,7 +242,7 @@ export function buildPlan(request: ParsedRequest): AtlasPlan {
       name: "Warehouse turns full",
       probability: 0.14,
       impact: "Reservation bumped; lot would wait on the truck for 6+ hours.",
-      mitigation: `Hoskote Cold Storage held as standby with ${(WAREHOUSES[3].capacityTonnes - WAREHOUSES[3].usedTonnes).toFixed(0)} t free.`,
+      mitigation: `Hoskote Cold Storage held as standby with ${(WAREHOUSES[3]!.capacityTonnes - WAREHOUSES[3]!.usedTonnes).toFixed(0)} t free.`,
       tone: "good",
     },
   ];
