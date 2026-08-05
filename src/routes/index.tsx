@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Building2, Sprout } from "lucide-react";
+import { Building2, Sprout, BrainCircuit } from "lucide-react";
 import { ChatPanel } from "@/components/atlas/ChatPanel";
 import { AgentPipeline } from "@/components/atlas/AgentPipeline";
 import { DigitalTwinPanel } from "@/components/atlas/DigitalTwinPanel";
@@ -10,6 +10,8 @@ import { ConfirmationCard } from "@/components/atlas/ConfirmationCard";
 import { FarmerProfile } from "@/components/atlas/FarmerProfile";
 import { AdminDashboard } from "@/components/atlas/AdminDashboard";
 import { LanguageSwitcher } from "@/components/atlas/LanguageSwitcher";
+import { FarmIntelligencePanel } from "@/components/atlas/FarmIntelligencePanel";
+import { RegionalIntelligencePanel } from "@/components/atlas/RegionalIntelligencePanel";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({

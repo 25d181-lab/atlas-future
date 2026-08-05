@@ -53,7 +53,9 @@ export const useAtlas = create<AtlasState>((set, get) => ({
       id: "m0",
       from: "atlas",
       text: translateGreeting(),
-      time: now(),
+      // No timestamp on the seed message: formatting it at module load
+      // differs between SSR and hydration and breaks the React tree.
+      time: "",
     },
   ],
   phase: "idle",
