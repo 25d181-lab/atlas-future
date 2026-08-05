@@ -141,7 +141,10 @@ export function DigitalTwinPanel() {
                 <stop offset="100%" stopColor={GOLD} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <ChartAxes />
+            <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} width={44} />
+            <Tooltip contentStyle={{ background: "rgba(10,15,10,0.92)", border: "1px solid rgba(227,178,60,0.35)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "#e3b23c" }} />
             <Area type="monotone" dataKey="price" stroke={GOLD} strokeWidth={2} fill="url(#twinPrice)" isAnimationActive />
           </AreaChart>
         </ChartCard>
@@ -154,21 +157,30 @@ export function DigitalTwinPanel() {
                 <stop offset="100%" stopColor={LEAF} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <ChartAxes />
+            <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} width={44} />
+            <Tooltip contentStyle={{ background: "rgba(10,15,10,0.92)", border: "1px solid rgba(227,178,60,0.35)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "#e3b23c" }} />
             <Area type="monotone" dataKey="demand" stroke={LEAF} strokeWidth={2} fill="url(#twinDemand)" />
           </AreaChart>
         </ChartCard>
 
         <ChartCard title="Expected net profit (₹)">
           <LineChart data={sim.series}>
-            <ChartAxes />
+            <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} width={44} />
+            <Tooltip contentStyle={{ background: "rgba(10,15,10,0.92)", border: "1px solid rgba(227,178,60,0.35)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "#e3b23c" }} />
             <Line type="monotone" dataKey="profit" stroke={BLUE} strokeWidth={2} dot={{ r: 2 }} />
           </LineChart>
         </ChartCard>
 
         <ChartCard title="Cold-chain free capacity % vs spoilage %">
           <LineChart data={sim.series}>
-            <ChartAxes />
+            <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
+            <XAxis dataKey="day" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} width={44} />
+            <Tooltip contentStyle={{ background: "rgba(10,15,10,0.92)", border: "1px solid rgba(227,178,60,0.35)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "#e3b23c" }} />
             <Line type="monotone" dataKey="warehouseFreePct" stroke={LEAF} strokeWidth={2} dot={false} />
             <Line type="monotone" dataKey="spoilage" stroke={RED} strokeWidth={2} dot={false} />
           </LineChart>
@@ -217,25 +229,6 @@ export function DigitalTwinPanel() {
         </>
       )}
     </section>
-  );
-}
-
-function ChartAxes() {
-  return (
-    <>
-      <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
-      <XAxis dataKey="day" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
-      <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} width={44} />
-      <Tooltip
-        contentStyle={{
-          background: "rgba(10,15,10,0.92)",
-          border: "1px solid rgba(227,178,60,0.35)",
-          borderRadius: 12,
-          fontSize: 12,
-        }}
-        labelStyle={{ color: "#e3b23c" }}
-      />
-    </>
   );
 }
 
