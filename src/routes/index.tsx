@@ -35,7 +35,7 @@ export const Route = createFileRoute("/")({
   component: AtlasPage,
 });
 
-type View = "farmer" | "admin";
+type View = "farmer" | "intelligence" | "admin";
 
 function AtlasPage() {
   const [view, setView] = useState<View>("farmer");
@@ -60,6 +60,7 @@ function AtlasPage() {
           {(
             [
               { id: "farmer", label: tr("farmerView"), icon: Sprout },
+              { id: "intelligence", label: "Intelligence", icon: BrainCircuit },
               { id: "admin", label: tr("adminView"), icon: Building2 },
             ] as const
           ).map((t) => (
