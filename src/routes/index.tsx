@@ -99,6 +99,12 @@ function AtlasPage() {
             <WarehousePanel />
           </div>
         </div>
+      ) : view === "intelligence" ? (
+        <div className="space-y-4">
+          <FarmIntelligencePanel />
+          <RegionalIntelligencePanel />
+          <DigitalTwinPanel />
+        </div>
       ) : (
         <AdminDashboard />
       )}
