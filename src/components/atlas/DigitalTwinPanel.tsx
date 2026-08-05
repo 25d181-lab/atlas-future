@@ -223,9 +223,9 @@ export function DigitalTwinPanel() {
 function ChartAxes() {
   return (
     <>
-      <CartesianGrid stroke="hsl(0 0% 100% / 0.06)" vertical={false} />
-      <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(0 0% 100% / 0.45)" }} axisLine={false} tickLine={false} />
-      <YAxis tick={{ fontSize: 10, fill: "hsl(0 0% 100% / 0.45)" }} axisLine={false} tickLine={false} width={44} />
+      <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
+      <XAxis dataKey="day" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} />
+      <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.55)" }} axisLine={false} tickLine={false} width={44} />
       <Tooltip
         contentStyle={{
           background: "rgba(10,15,10,0.92)",
