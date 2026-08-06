@@ -39,6 +39,8 @@ type AtlasState = {
   plan: AtlasPlan | null;
   runs: ExecutedRun[];
   send: (text: string, voice?: boolean) => void;
+  pushMessage: (from: "farmer" | "atlas", text: string, voice?: boolean) => void;
+
   approve: () => void;
   reset: () => void;
 };
