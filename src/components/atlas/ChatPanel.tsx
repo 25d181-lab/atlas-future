@@ -156,13 +156,26 @@ export function ChatPanel() {
           <p className="truncate text-sm font-semibold">{t("assistant")}</p>
           <p className="text-xs text-leaf">{t("online")}</p>
         </div>
+        {speaking && (
+          <button
+            onClick={stopAudio}
+            className="ml-auto flex items-center gap-1.5 rounded-full border border-leaf/50 bg-leaf/10 px-3 py-1 text-xs text-leaf"
+          >
+            <VolumeX className="size-3.5" /> {t("stopAudio")}
+          </button>
+        )}
         <button
-          onClick={reset}
-          className="ml-auto rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition hover:text-foreground"
+          onClick={() => {
+            stopAudio();
+            turnsRef.current = [];
+            reset();
+          }}
+          className={`${speaking ? "" : "ml-auto "}rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition hover:text-foreground`}
         >
           {t("newChat")}
         </button>
       </header>
+
 
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
         <AnimatePresence initial={false}>
