@@ -88,8 +88,8 @@ export function AgentPipeline() {
                   <Icon className="size-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{agent.name}</p>
-                  <p className="truncate text-[11px] text-muted-foreground">{agent.role}</p>
+                  <p className="truncate text-sm font-medium">{tr(`agent.${agent.key}`)}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{tr(`agent.${agent.key}.role`)}</p>
                 </div>
                 {status === "running" && <Loader2 className="size-4 animate-spin text-gold" />}
                 {status === "done" && <CheckCircle2 className="size-4 text-leaf" />}

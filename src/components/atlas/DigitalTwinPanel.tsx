@@ -85,7 +85,7 @@ export function DigitalTwinPanel() {
                 on ? "border-gold/60 bg-gold/20 text-gold" : "border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              {l.label}
+              {tr(`lever.${l.key}`)}
             </button>
           );
         })}
