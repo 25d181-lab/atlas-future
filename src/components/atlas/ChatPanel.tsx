@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CheckCheck, Loader2, Mic, Send, Square } from "lucide-react";
+import { CheckCheck, Loader2, Mic, Send, Square, Volume2, VolumeX } from "lucide-react";
 import { Check } from "lucide-react";
 import { useAtlas } from "@/lib/atlas-store";
 import { useI18n, useT, LANGUAGES } from "@/lib/i18n";
 import { blobToBase64, startRecording, type Recorder } from "@/lib/wav";
 import { transcribeAudio } from "@/lib/transcribe.functions";
+import { askAtlas, speakAtlas, type AtlasTurn } from "@/lib/assistant.functions";
 
 function Waveform({ active }: { active: boolean }) {
   return (
@@ -27,32 +28,82 @@ function Waveform({ active }: { active: boolean }) {
 }
 
 export function ChatPanel() {
-  const { messages, phase, send, approve, reset } = useAtlas();
+  const { messages, phase, send, approve, reset, pushMessage } = useAtlas();
   const t = useT();
   const lang = useI18n((s) => s.lang);
   const [text, setText] = useState("");
   const [listening, setListening] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recorderRef = useRef<Recorder | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const turnsRef = useRef<AtlasTurn[]>([]);
 
   const suggestions = [t("s1"), t("s2"), t("s3")];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, phase]);
+  }, [messages, phase, thinking]);
 
-  const submit = (value: string, voice = false) => {
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+    };
+  }, []);
+
+  const stopAudio = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setSpeaking(false);
+  };
+
+  const speak = async (value: string) => {
+    try {
+      stopAudio();
+      const { audioBase64 } = await speakAtlas({ data: { text: value } });
+      const audio = new Audio(`data:audio/mpeg;base64,${audioBase64}`);
+      audioRef.current = audio;
+      audio.onended = () => setSpeaking(false);
+      setSpeaking(true);
+      await audio.play();
+    } catch {
+      setSpeaking(false);
+    }
+  };
+
+  const submit = async (value: string, voice = false) => {
     const trimmed = value.trim();
-    if (!trimmed) return;
-    if (phase === "awaiting" && /^(yes|haudu|ha|ok|proceed|sari|ಹೌದು|हाँ|हां|ஆம்|అవును)/i.test(trimmed)) {
+    if (!trimmed || thinking) return;
+    setError(null);
+    setText("");
+
+    if (phase === "awaiting" && /^(yes|haudu|ha|ok|proceed|sari|ಹೌದು|हाँ|हां|ஆம்|అవును|അതെ)/i.test(trimmed)) {
       approve();
-      setText("");
       return;
     }
-    send(trimmed, voice);
-    setText("");
+
+    pushMessage("farmer", trimmed, voice);
+    turnsRef.current = [...turnsRef.current, { role: "user", content: trimmed }].slice(-12);
+    setThinking(true);
+    try {
+      const answer = await askAtlas({ data: { messages: turnsRef.current, lang } });
+      if (answer.intent === "sell_harvest") {
+        setThinking(false);
+        send(trimmed, voice, { skipFarmerEcho: true });
+        return;
+      }
+      const reply = answer.reply || t("outOfScope");
+      turnsRef.current = [...turnsRef.current, { role: "assistant", content: reply }].slice(-12);
+      pushMessage("atlas", reply);
+      setThinking(false);
+      void speak(reply);
+    } catch (e) {
+      setThinking(false);
+      setError(e instanceof Error ? e.message : t("assistantError"));
+    }
   };
 
   const stopAndTranscribe = async () => {
@@ -71,7 +122,8 @@ export function ChatPanel() {
       const audioBase64 = await blobToBase64(blob);
       const stt = LANGUAGES.find((l) => l.code === lang)?.stt;
       const result = await transcribeAudio({ data: { audioBase64, language: stt } });
-      if (result.text) submit(result.text, true);
+      setTranscribing(false);
+      if (result.text) await submit(result.text, true);
       else setError(t("tooShort"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Transcription failed.");
@@ -94,6 +146,7 @@ export function ChatPanel() {
       setError(t("micDenied"));
     }
   };
+
 
   return (
     <div className="panel flex h-full min-h-[560px] flex-col overflow-hidden">
