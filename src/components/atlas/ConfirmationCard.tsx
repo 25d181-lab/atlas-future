@@ -2,19 +2,21 @@ import { motion } from "motion/react";
 import { BadgeCheck, Coins, Leaf, Lock } from "lucide-react";
 import { inr } from "@/lib/atlas-data";
 import { useAtlas } from "@/lib/atlas-store";
+import { useT } from "@/lib/i18n";
 
 export function ConfirmationCard() {
   const { plan, phase, approve } = useAtlas();
+  const tr = useT();
   if (!plan || (phase !== "awaiting" && phase !== "confirmed")) return null;
 
   const e = plan.economics;
   const locked = phase === "confirmed";
 
   const actions = [
-    { label: "Buyer", value: `${plan.mandi.name} @ ₹${e.negotiatedPerKg}/kg` },
-    { label: "Storage", value: `${plan.warehouse.name} · 2 days` },
-    { label: "Transport", value: `${plan.transporter.name} · ${plan.transporter.vehicle}` },
-    { label: "Insurance", value: "Claim pack pre-filed (auto)" },
+    { label: tr("buyer"), value: `${plan.mandi.name} @ ₹${e.negotiatedPerKg}/kg` },
+    { label: tr("storage"), value: `${plan.warehouse.name} · 2 ${tr("days")}` },
+    { label: tr("transport"), value: `${plan.transporter.name} · ${plan.transporter.vehicle}` },
+    { label: tr("insurance"), value: tr("claimPack") },
   ];
 
   return (
@@ -26,14 +28,14 @@ export function ConfirmationCard() {
       <div className="flex flex-wrap items-center gap-2">
         {locked ? <Lock className="size-5 text-leaf" /> : <BadgeCheck className="size-5 text-gold" />}
         <h2 className="text-lg font-semibold text-gradient-gold">
-          {locked ? "All actions locked" : "Final plan — awaiting your approval"}
+          {locked ? tr("planLocked") : tr("planAwaiting")}
         </h2>
         <span
           className={`ml-auto rounded-full px-3 py-1 text-[11px] font-semibold ${
             locked ? "bg-leaf/20 text-leaf" : "bg-gold/20 text-gold"
           }`}
         >
-          {locked ? "Executed" : "Pending farmer OK"}
+          {locked ? tr("executed") : tr("pendingOk")}
         </span>
       </div>
 
@@ -49,9 +51,9 @@ export function ConfirmationCard() {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <Stat icon={Coins} label="Estimated net" value={inr(e.netRevenue)} />
-        <Stat icon={Leaf} label="Extra income vs local sale" value={`+${inr(e.extraIncome)}`} />
-        <Stat icon={BadgeCheck} label="Waste avoided" value={`${e.wasteAvoidedKg} kg`} />
+        <Stat icon={Coins} label={tr("estimatedNet")} value={inr(e.netRevenue)} />
+        <Stat icon={Leaf} label={tr("extraIncome")} value={`+${inr(e.extraIncome)}`} />
+        <Stat icon={BadgeCheck} label={tr("wasteAvoided")} value={`${e.wasteAvoidedKg} kg`} />
       </div>
 
       {!locked && (
@@ -59,7 +61,7 @@ export function ConfirmationCard() {
           onClick={approve}
           className="mt-4 w-full rounded-xl bg-gold py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
         >
-          Approve & execute all actions
+          {tr("approveExecute")}
         </button>
       )}
     </motion.section>

@@ -2,14 +2,17 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, Info, Layers, ShieldCheck } from "lucide-react";
 import type { Explanation } from "@/lib/atlas-intelligence";
+import { useT } from "@/lib/i18n";
 
 /**
  * Reusable Explainable-AI disclosure.
  * Every ATLAS recommendation renders one of these: why, alternatives,
  * confidence and the data sources behind the call.
  */
-export function ExplainCard({ explanation, label = "Why this recommendation?" }: { explanation: Explanation; label?: string }) {
+export function ExplainCard({ explanation, label }: { explanation: Explanation; label?: string }) {
+  const tr = useT();
   const [open, setOpen] = useState(false);
+  const heading = label ?? tr("whyRecommendation");
   const pct = Math.round(explanation.confidence * 100);
 
   return (
@@ -19,7 +22,7 @@ export function ExplainCard({ explanation, label = "Why this recommendation?" }:
         className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs font-medium text-foreground/90"
       >
         <Info className="size-3.5 text-gold" />
-        {label}
+        {heading}
         <span className="ml-auto flex items-center gap-2">
           <ConfidenceMeter value={explanation.confidence} compact />
           <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -36,7 +39,7 @@ export function ExplainCard({ explanation, label = "Why this recommendation?" }:
           >
             <div className="space-y-3 border-t border-border/60 px-3 py-3 text-[12px] leading-relaxed">
               <div>
-                <p className="mb-1 font-semibold text-gold">Reasoning</p>
+                <p className="mb-1 font-semibold text-gold">{tr("reasoning")}</p>
                 <ul className="space-y-1 text-muted-foreground">
                   {explanation.why.map((w) => (
                     <li key={w} className="flex gap-2">
@@ -49,7 +52,7 @@ export function ExplainCard({ explanation, label = "Why this recommendation?" }:
 
               <div>
                 <p className="mb-1 flex items-center gap-1.5 font-semibold text-gold">
-                  <Layers className="size-3.5" /> Alternatives considered
+                  <Layers className="size-3.5" /> {tr("alternatives")}
                 </p>
                 <ul className="space-y-1 text-muted-foreground">
                   {explanation.alternatives.map((a) => (
@@ -60,7 +63,7 @@ export function ExplainCard({ explanation, label = "Why this recommendation?" }:
 
               <div>
                 <p className="mb-1 flex items-center gap-1.5 font-semibold text-gold">
-                  <ShieldCheck className="size-3.5" /> Supporting data ({pct}% confidence)
+                  <ShieldCheck className="size-3.5" /> {tr("supportingData", { pct })}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {explanation.sources.map((s) => (
