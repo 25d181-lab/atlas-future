@@ -202,9 +202,19 @@ export function ChatPanel() {
                 )}
                 {m.text}
                 <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
+                  {m.from === "atlas" && m.text && (
+                    <button
+                      onClick={() => void speak(m.text)}
+                      className="mr-auto flex items-center gap-1 text-leaf transition hover:brightness-125"
+                      aria-label={t("speakAnswer")}
+                    >
+                      <Volume2 className="size-3.5" /> {t("speakAnswer")}
+                    </button>
+                  )}
                   {m.time}
                   {m.from === "farmer" && <CheckCheck className="size-3 text-leaf" />}
                 </div>
+
               </div>
             </motion.div>
           ))}
