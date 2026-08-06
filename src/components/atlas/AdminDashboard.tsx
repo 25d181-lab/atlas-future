@@ -8,6 +8,7 @@ import {
   inr,
 } from "@/lib/atlas-data";
 import { WarehousePanel } from "./WarehousePanel";
+import { useT } from "@/lib/i18n";
 
 const STATUS_TONE: Record<string, string> = {
   "Awaiting approval": "bg-gold/20 text-gold",
@@ -17,6 +18,7 @@ const STATUS_TONE: Record<string, string> = {
 };
 
 export function AdminDashboard() {
+  const tr = useT();
   const totalTonnes = FPO_FARMERS.reduce((s, f) => s + f.tonnes, 0);
   const totalCapacity = WAREHOUSES.reduce((s, w) => s + w.capacityTonnes, 0);
   const usedCapacity = WAREHOUSES.reduce((s, w) => s + w.usedTonnes, 0);
@@ -24,24 +26,24 @@ export function AdminDashboard() {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="grid gap-4 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-4">
-        <Kpi icon={Users} label="Active farmers" value="128" sub="Kolar Horticulture FPO" />
-        <Kpi icon={Building2} label="Cold chain used" value={`${Math.round((usedCapacity / totalCapacity) * 100)}%`} sub={`${usedCapacity} / ${totalCapacity} t`} />
-        <Kpi icon={TrendingUp} label="Extra income (30d)" value={inr(742000)} sub="vs same-day local sale" />
-        <Kpi icon={AlertTriangle} label="Waste avoided (30d)" value="18.4 t" sub="cold-chain interventions" />
+        <Kpi icon={Users} label={tr("activeFarmers")} value="128" sub="Kolar Horticulture FPO" />
+        <Kpi icon={Building2} label={tr("coldChainUsed")} value={`${Math.round((usedCapacity / totalCapacity) * 100)}%`} sub={`${usedCapacity} / ${totalCapacity} t`} />
+        <Kpi icon={TrendingUp} label={tr("extraIncome30")} value={inr(742000)} sub={tr("vsLocalSale")} />
+        <Kpi icon={AlertTriangle} label={tr("wasteAvoided30")} value="18.4 t" sub={tr("coldChainInterventions")} />
       </div>
 
       <section className="panel p-5 lg:col-span-2">
-        <h2 className="text-lg font-semibold text-gradient-gold">Member lots today</h2>
-        <p className="text-xs text-muted-foreground">{totalTonnes.toFixed(1)} t aggregated across 5 villages (simulated)</p>
+        <h2 className="text-lg font-semibold text-gradient-gold">{tr("memberLots")}</h2>
+        <p className="text-xs text-muted-foreground">{tr("memberLotsSub", { tonnes: totalTonnes.toFixed(1) })}</p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[520px] text-sm">
             <thead>
               <tr className="text-left text-[11px] uppercase tracking-wide text-muted-foreground">
-                <th className="pb-2 font-medium">Farmer</th>
-                <th className="pb-2 font-medium">Village</th>
-                <th className="pb-2 font-medium">Crop</th>
-                <th className="pb-2 font-medium">Qty</th>
-                <th className="pb-2 font-medium">Status</th>
+                <th className="pb-2 font-medium">{tr("farmer")}</th>
+                <th className="pb-2 font-medium">{tr("village")}</th>
+                <th className="pb-2 font-medium">{tr("crop")}</th>
+                <th className="pb-2 font-medium">{tr("qty")}</th>
+                <th className="pb-2 font-medium">{tr("status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -53,7 +55,7 @@ export function AdminDashboard() {
                   <td className="py-2.5">{f.tonnes} t</td>
                   <td className="py-2.5">
                     <span className={`rounded-full px-2 py-0.5 text-[11px] ${STATUS_TONE[f.status] ?? "bg-surface-2"}`}>
-                      {f.status}
+                      {tr(f.status)}
                     </span>
                   </td>
                 </tr>
@@ -65,9 +67,9 @@ export function AdminDashboard() {
 
       <section className="panel p-5">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-gradient-gold">
-          <Radio className="size-5 text-gold" /> Swarm alerts
+          <Radio className="size-5 text-gold" /> {tr("swarmAlerts")}
         </h2>
-        <p className="text-xs text-muted-foreground">Disease signals broadcast to nearby farmers automatically.</p>
+        <p className="text-xs text-muted-foreground">{tr("swarmSub")}</p>
         <div className="mt-4 space-y-3">
           {SWARM_ALERTS.map((a) => (
             <motion.div
@@ -79,7 +81,7 @@ export function AdminDashboard() {
               <p className="text-sm font-medium text-warn">{a.village}</p>
               <p className="mt-1 text-[12px] text-foreground/90">{a.issue}</p>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
-                {a.farmersNotified} farmers alerted within {a.radiusKm} km
+                {tr("farmersAlerted", { count: a.farmersNotified, km: a.radiusKm })}
               </p>
             </motion.div>
           ))}
@@ -87,15 +89,15 @@ export function AdminDashboard() {
       </section>
 
       <section className="panel p-5 lg:col-span-2">
-        <h2 className="text-lg font-semibold text-gradient-gold">Mandi price board — Tomato</h2>
-        <p className="text-xs text-muted-foreground">Simulated 72-hour outlook across 5 markets.</p>
+        <h2 className="text-lg font-semibold text-gradient-gold">{tr("mandiBoard")}</h2>
+        <p className="text-xs text-muted-foreground">{tr("mandiSub")}</p>
         <div className="mt-4 space-y-2.5">
           {MANDIS.map((m) => (
             <div key={m.name} className="flex items-center gap-3 rounded-xl border border-border bg-surface-2/40 p-3">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{m.name}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {m.district} · {m.distanceKm} km · arrivals {m.arrivalsTonnes} t
+                  {m.district} · {m.distanceKm} {tr("km")} · {tr("arrivals")} {m.arrivalsTonnes} t
                 </p>
               </div>
               <div className="text-right">
@@ -109,7 +111,7 @@ export function AdminDashboard() {
                 <div className="h-1.5 overflow-hidden rounded-full bg-background/60">
                   <div className="h-full rounded-full bg-gold" style={{ width: `${m.demandIndex}%` }} />
                 </div>
-                <p className="mt-1 text-right text-[10px] text-muted-foreground">demand {m.demandIndex}</p>
+                <p className="mt-1 text-right text-[10px] text-muted-foreground">{tr("demandLabel")} {m.demandIndex}</p>
               </div>
             </div>
           ))}

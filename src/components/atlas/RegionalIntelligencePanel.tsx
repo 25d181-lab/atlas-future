@@ -3,14 +3,15 @@ import { motion } from "motion/react";
 import { Globe2, TriangleAlert, Store, Layers3 } from "lucide-react";
 import { runRegionalIntelligence } from "@/lib/atlas-intelligence";
 import { ExplainCard } from "./ExplainCard";
+import { useT } from "@/lib/i18n";
 
 type LayerKey = "demand" | "supply" | "suitability" | "diseasePressure";
 
-const LAYERS: { key: LayerKey; label: string; hue: string }[] = [
-  { key: "demand", label: "Demand", hue: "45 92% 55%" },
-  { key: "supply", label: "Supply", hue: "150 62% 45%" },
-  { key: "suitability", label: "Crop suitability", hue: "190 80% 52%" },
-  { key: "diseasePressure", label: "Disease pressure", hue: "0 72% 55%" },
+const LAYERS: { key: LayerKey; tkey: string; hue: string }[] = [
+  { key: "demand", tkey: "demand", hue: "45 92% 55%" },
+  { key: "supply", tkey: "supply", hue: "150 62% 45%" },
+  { key: "suitability", tkey: "cropSuitability", hue: "190 80% 52%" },
+  { key: "diseasePressure", tkey: "diseasePressure", hue: "0 72% 55%" },
 ];
 
 const SEVERITY = {
@@ -20,6 +21,7 @@ const SEVERITY = {
 } as const;
 
 export function RegionalIntelligencePanel() {
+  const tr = useT();
   const [layer, setLayer] = useState<LayerKey>("demand");
   const intel = useMemo(() => runRegionalIntelligence(), []);
   const active = LAYERS.find((l) => l.key === layer)!;
@@ -28,15 +30,14 @@ export function RegionalIntelligencePanel() {
     <section className="panel p-5">
       <header className="flex flex-wrap items-center gap-2">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-gradient-gold">
-          <Globe2 className="size-5 text-gold" /> Regional Intelligence Engine
+          <Globe2 className="size-5 text-gold" /> {tr("regionalEngine")}
         </h2>
         <span className="rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-[11px] text-gold">
-          {intel.cells.length} taluks live
+          {tr("taluksLive", { count: intel.cells.length })}
         </span>
       </header>
       <p className="mt-1 text-xs text-muted-foreground">
-        ATLAS does not look at one farm. It models the entire surrounding ecosystem — cropping patterns, buyer pull,
-        cold-chain, rainfall and disease signals.
+        {tr("regionalSub")}
       </p>
 
       {/* Layer switcher */}
@@ -50,7 +51,7 @@ export function RegionalIntelligencePanel() {
               layer === l.key ? "border-gold/50 bg-gold/15 text-gold" : "border-border text-muted-foreground hover:text-foreground"
             }`}
           >
-            {l.label}
+            {tr(l.tkey)}
           </button>
         ))}
       </div>
@@ -73,7 +74,7 @@ export function RegionalIntelligencePanel() {
               <p className="mt-2 text-xl font-bold" style={{ color: `hsl(${active.hue})` }}>
                 {v}
               </p>
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{active.label}</p>
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{tr(active.tkey)}</p>
             </motion.div>
           );
         })}
@@ -81,10 +82,10 @@ export function RegionalIntelligencePanel() {
 
       <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
         <span className="rounded-lg border border-destructive/30 bg-destructive/10 px-2 py-1 text-destructive">
-          Oversupply: {intel.oversupplied.join(", ") || "none"}
+          {tr("oversupply")}: {intel.oversupplied.join(", ") || tr("none")}
         </span>
         <span className="rounded-lg border border-leaf/30 bg-leaf/10 px-2 py-1 text-leaf">
-          Demand gaps: {intel.undersupplied.join(", ") || "none"}
+          {tr("demandGaps")}: {intel.undersupplied.join(", ") || tr("none")}
         </span>
       </div>
 
@@ -103,18 +104,18 @@ export function RegionalIntelligencePanel() {
 
       {/* Market opportunities */}
       <h3 className="mt-5 flex items-center gap-2 text-sm font-semibold text-foreground">
-        <Store className="size-4 text-gold" /> Market opportunities detected
+        <Store className="size-4 text-gold" /> {tr("marketOpportunities")}
       </h3>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[520px] text-left text-[12px]">
           <thead className="text-[11px] uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="pb-2">Buyer</th>
-              <th className="pb-2">Crop</th>
-              <th className="pb-2">Volume</th>
-              <th className="pb-2">Price</th>
-              <th className="pb-2">Window</th>
-              <th className="pb-2">Confidence</th>
+              <th className="pb-2">{tr("buyer")}</th>
+              <th className="pb-2">{tr("crop")}</th>
+              <th className="pb-2">{tr("volume")}</th>
+              <th className="pb-2">{tr("price")}</th>
+              <th className="pb-2">{tr("window")}</th>
+              <th className="pb-2">{tr("confidence")}</th>
             </tr>
           </thead>
           <tbody>
@@ -132,7 +133,7 @@ export function RegionalIntelligencePanel() {
         </table>
       </div>
 
-      <ExplainCard explanation={intel.explanation} label="How the region was scored" />
+      <ExplainCard explanation={intel.explanation} label={tr("howRegionScored")} />
     </section>
   );
 }

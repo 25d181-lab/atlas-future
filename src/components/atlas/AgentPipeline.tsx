@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { AGENTS, type AgentKey } from "@/lib/atlas-agents";
 import { useAtlas } from "@/lib/atlas-store";
+import { useT } from "@/lib/i18n";
 
 const ICONS: Record<AgentKey, typeof Leaf> = {
   agroguard: Leaf,
@@ -26,6 +27,7 @@ const ICONS: Record<AgentKey, typeof Leaf> = {
 
 export function AgentPipeline() {
   const { statuses, plan, phase } = useAtlas();
+  const tr = useT();
   const done = AGENTS.filter((a) => statuses[a.key] === "done").length;
 
   return (
@@ -33,14 +35,14 @@ export function AgentPipeline() {
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold text-gradient-gold">
-            <Bot className="size-5 text-gold" /> Multi-agent pipeline
+            <Bot className="size-5 text-gold" /> {tr("pipelineTitle")}
           </h2>
           <p className="text-xs text-muted-foreground">
-            Seven specialised agents run in sequence — each one explains its reasoning.
+            {tr("pipelineSub")}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
-          {done}/{AGENTS.length} complete
+          {done}/{AGENTS.length} {tr("complete")}
         </span>
       </div>
 
@@ -86,8 +88,8 @@ export function AgentPipeline() {
                   <Icon className="size-4" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{agent.name}</p>
-                  <p className="truncate text-[11px] text-muted-foreground">{agent.role}</p>
+                  <p className="truncate text-sm font-medium">{tr(`agent.${agent.key}`)}</p>
+                  <p className="truncate text-[11px] text-muted-foreground">{tr(`agent.${agent.key}.role`)}</p>
                 </div>
                 {status === "running" && <Loader2 className="size-4 animate-spin text-gold" />}
                 {status === "done" && <CheckCircle2 className="size-4 text-leaf" />}
@@ -129,7 +131,7 @@ export function AgentPipeline() {
 
       {phase === "idle" && (
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Send a message in the chat to wake the agents.
+          {tr("wakeAgents")}
         </p>
       )}
     </section>

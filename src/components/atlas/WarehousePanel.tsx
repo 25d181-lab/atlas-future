@@ -2,9 +2,11 @@ import { motion } from "motion/react";
 import { MapPin, Snowflake } from "lucide-react";
 import { WAREHOUSES, inr } from "@/lib/atlas-data";
 import { useAtlas } from "@/lib/atlas-store";
+import { useT } from "@/lib/i18n";
 
 export function WarehousePanel() {
   const plan = useAtlas((s) => s.plan);
+  const tr = useT();
   const reservedId = plan?.warehouse.id;
 
   return (
@@ -12,9 +14,9 @@ export function WarehousePanel() {
       <div className="flex items-end justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold text-gradient-gold">
-            <Snowflake className="size-5 text-gold" /> Warehouse network
+            <Snowflake className="size-5 text-gold" /> {tr("warehouseNetwork")}
           </h2>
-          <p className="text-xs text-muted-foreground">Live capacity across the Kolar–Bengaluru cold chain (simulated).</p>
+          <p className="text-xs text-muted-foreground">{tr("warehouseSub")}</p>
         </div>
       </div>
 
@@ -39,7 +41,7 @@ export function WarehousePanel() {
                 </span>
                 {reserved && (
                   <span className="ml-auto rounded-full bg-gold px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                    Reserved by ATLAS
+                    {tr("reservedByAtlas")}
                   </span>
                 )}
               </div>
@@ -53,9 +55,9 @@ export function WarehousePanel() {
               </div>
               <div className="mt-1.5 flex justify-between text-[11px] text-muted-foreground">
                 <span>
-                  {w.usedTonnes}/{w.capacityTonnes} t used · {pct}%
+                  {w.usedTonnes}/{w.capacityTonnes} t {tr("used")} · {pct}%
                 </span>
-                <span>{inr(w.ratePerTonneDay)}/t/day</span>
+                <span>{inr(w.ratePerTonneDay)}{tr("perTonneDay")}</span>
               </div>
             </motion.div>
           );

@@ -4,6 +4,7 @@ import { Sprout, Droplets, ShieldAlert, BadgeIndianRupee, Clock, Landmark } from
 import { DEFAULT_FARM, runFarmIntelligence, type FarmProfile } from "@/lib/atlas-intelligence";
 import { inr } from "@/lib/atlas-data";
 import { ExplainCard } from "./ExplainCard";
+import { useT } from "@/lib/i18n";
 
 const RISK_TONE = {
   Low: "border-leaf/40 bg-leaf/10 text-leaf",
@@ -15,6 +16,7 @@ const WATER_SOURCES: FarmProfile["waterSource"][] = ["Borewell", "Canal", "Tank"
 const IRRIGATION: FarmProfile["irrigation"][] = ["Drip", "Sprinkler", "Flood", "None"];
 
 export function FarmIntelligencePanel() {
+  const tr = useT();
   const [farm, setFarm] = useState<FarmProfile>(DEFAULT_FARM);
   const recs = useMemo(() => runFarmIntelligence(farm), [farm]);
 
@@ -22,31 +24,31 @@ export function FarmIntelligencePanel() {
     <section className="panel p-5">
       <header className="flex flex-wrap items-center gap-2">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-gradient-gold">
-          <Sprout className="size-5 text-leaf" /> Farm Intelligence Engine
+          <Sprout className="size-5 text-leaf" /> {tr("farmEngine")}
         </h2>
-        <span className="rounded-full border border-leaf/30 bg-leaf/10 px-2 py-0.5 text-[11px] text-leaf">Pre-sowing</span>
+        <span className="rounded-full border border-leaf/30 bg-leaf/10 px-2 py-0.5 text-[11px] text-leaf">{tr("preSowing")}</span>
       </header>
       <p className="mt-1 text-xs text-muted-foreground">
-        GPS, weather, soil, rotation history, regional demand and scheme eligibility fused into a ranked planting plan.
+        {tr("farmEngineSub")}
       </p>
 
       {/* Farm parameters — every change re-runs the engine */}
       <div className="mt-4 grid gap-3 rounded-xl border border-border bg-surface-2/40 p-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Field label="Land (acres)">
+        <Field label={tr("landAcres")}>
           <input
             type="range" min={0.5} max={12} step={0.5} value={farm.landAcres}
             onChange={(e) => setFarm({ ...farm, landAcres: Number(e.target.value) })}
             className="w-full accent-[hsl(var(--gold,45_90%_55%))]"
           />
-          <span className="text-xs font-semibold text-gold">{farm.landAcres} ac</span>
+          <span className="text-xs font-semibold text-gold">{farm.landAcres} {tr("acres")}</span>
         </Field>
-        <Field label="Water source">
-          <Chips options={WATER_SOURCES} value={farm.waterSource} onChange={(v) => setFarm({ ...farm, waterSource: v })} />
+        <Field label={tr("waterSource")}>
+          <Chips options={WATER_SOURCES} value={farm.waterSource} onChange={(v) => setFarm({ ...farm, waterSource: v })} label={tr} />
         </Field>
-        <Field label="Irrigation">
-          <Chips options={IRRIGATION} value={farm.irrigation} onChange={(v) => setFarm({ ...farm, irrigation: v })} />
+        <Field label={tr("irrigation")}>
+          <Chips options={IRRIGATION} value={farm.irrigation} onChange={(v) => setFarm({ ...farm, irrigation: v })} label={tr} />
         </Field>
-        <Field label="Previous crop">
+        <Field label={tr("previousCrop")}>
           <Chips
             options={["Tomato", "Onion", "Ragi", "Beans"]}
             value={farm.previousCrop}
@@ -68,16 +70,16 @@ export function FarmIntelligencePanel() {
               <span className="text-2xl">{r.emoji}</span>
               <div>
                 <h3 className="text-sm font-semibold text-foreground">{r.crop}</h3>
-                <p className="text-[11px] text-muted-foreground">Rank #{i + 1} · {r.durationDays} day cycle</p>
+                <p className="text-[11px] text-muted-foreground">{tr("rank")} #{i + 1} · {r.durationDays} {tr("dayCycle")}</p>
               </div>
               <span className={`ml-auto rounded-full border px-2 py-0.5 text-[11px] ${RISK_TONE[r.riskLevel]}`}>
-                {r.riskLevel} risk
+                {tr(r.riskLevel)} {tr("risk")}
               </span>
             </div>
 
             <div className="mt-3">
               <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>Suitability score</span>
+                <span>{tr("suitabilityScore")}</span>
                 <span className="font-semibold text-gold">{r.suitability}/100</span>
               </div>
               <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-background/70">
@@ -86,10 +88,10 @@ export function FarmIntelligencePanel() {
             </div>
 
             <dl className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
-              <Stat icon={Sprout} label="Yield" value={`${r.expectedYieldTonnes} t`} />
-              <Stat icon={BadgeIndianRupee} label="Profit" value={inr(r.expectedProfit)} />
-              <Stat icon={Droplets} label="Water" value={r.waterRequirement} />
-              <Stat icon={Clock} label="Harvest" value={`${r.durationDays}d`} />
+              <Stat icon={Sprout} label={tr("yield")} value={`${r.expectedYieldTonnes} t`} />
+              <Stat icon={BadgeIndianRupee} label={tr("profit")} value={inr(r.expectedProfit)} />
+              <Stat icon={Droplets} label={tr("water")} value={r.waterRequirement} />
+              <Stat icon={Clock} label={tr("harvest")} value={`${r.durationDays}d`} />
             </dl>
 
             <p className="mt-3 flex gap-2 text-[12px] text-muted-foreground">
@@ -101,7 +103,7 @@ export function FarmIntelligencePanel() {
               {r.governmentBenefit}
             </p>
 
-            <ExplainCard explanation={r.explanation} label={`Why ${r.crop}?`} />
+            <ExplainCard explanation={r.explanation} label={tr("whyCrop", { crop: r.crop })} />
           </motion.article>
         ))}
       </div>
@@ -118,7 +120,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Chips<T extends string>({ options, value, onChange }: { options: readonly T[]; value: T; onChange: (v: T) => void }) {
+function Chips<T extends string>({ options, value, onChange, label }: { options: readonly T[]; value: T; onChange: (v: T) => void; label?: (k: string) => string }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((o) => (
@@ -129,7 +131,7 @@ function Chips<T extends string>({ options, value, onChange }: { options: readon
             value === o ? "border-gold/50 bg-gold/15 text-gold" : "border-border text-muted-foreground hover:text-foreground"
           }`}
         >
-          {o}
+          {label ? label(o) : o}
         </button>
       ))}
     </div>

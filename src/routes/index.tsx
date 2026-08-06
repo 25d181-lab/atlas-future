@@ -60,7 +60,7 @@ function AtlasPage() {
           {(
             [
               { id: "farmer", label: tr("farmerView"), icon: Sprout },
-              { id: "intelligence", label: "Intelligence", icon: BrainCircuit },
+              { id: "intelligence", label: tr("intelligenceView"), icon: BrainCircuit },
               { id: "admin", label: tr("adminView"), icon: Building2 },
             ] as const
           ).map((t) => (
