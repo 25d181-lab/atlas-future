@@ -1,14 +1,16 @@
 import { History, ShieldCheck, Sprout, User } from "lucide-react";
 import { DECISION_HISTORY, FARMER, inr } from "@/lib/atlas-data";
 import { useAtlas } from "@/lib/atlas-store";
+import { useT } from "@/lib/i18n";
 
 export function FarmerProfile() {
   const runs = useAtlas((s) => s.runs);
+  const tr = useT();
 
   return (
     <section className="panel p-5">
       <h2 className="flex items-center gap-2 text-lg font-semibold text-gradient-gold">
-        <User className="size-5 text-gold" /> Farmer profile
+        <User className="size-5 text-gold" /> {tr("farmerProfile")}
       </h2>
 
       <div className="mt-4 flex items-center gap-3">
@@ -22,12 +24,12 @@ export function FarmerProfile() {
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-2">
-        <Chip icon={Sprout} label="Crops" value={String(FARMER.crops.length)} />
-        <Chip icon={ShieldCheck} label="Trust score" value={`${FARMER.trustScore}/100`} />
-        <Chip icon={History} label="With ATLAS" value={FARMER.atlasSince} />
+        <Chip icon={Sprout} label={tr("crops")} value={String(FARMER.crops.length)} />
+        <Chip icon={ShieldCheck} label={tr("trustScore")} value={`${FARMER.trustScore}/100`} />
+        <Chip icon={History} label={tr("withAtlas")} value={FARMER.atlasSince} />
       </div>
 
-      <p className="mt-4 text-[11px] uppercase tracking-wide text-muted-foreground">Decision history</p>
+      <p className="mt-4 text-[11px] uppercase tracking-wide text-muted-foreground">{tr("decisionHistory")}</p>
       <div className="mt-2 space-y-2">
         {runs.map((r) => (
           <div key={r.id} className="rounded-lg border border-gold/40 bg-gold/10 p-2.5 text-xs">
@@ -38,7 +40,7 @@ export function FarmerProfile() {
               <span className="text-gold">₹{r.price}/kg</span>
             </div>
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              {r.at} · net {inr(r.net)} · executed just now
+              {r.at} · {tr("net")} {inr(r.net)} · {tr("executedJustNow")}
             </p>
           </div>
         ))}
