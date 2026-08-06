@@ -66,7 +66,13 @@ export const useAtlas = create<AtlasState>((set, get) => ({
   plan: null,
   runs: [],
 
+  pushMessage: (from, text, voice = false) =>
+    set((s) => ({
+      messages: [...s.messages, { id: crypto.randomUUID(), from, text, time: now(), voice }],
+    })),
+
   send: (text, voice = false) => {
+
     if (get().phase === "running") return;
     const request = parseRequest(text);
     const plan = buildPlan(request);
