@@ -86,7 +86,7 @@ export function ChatPanel() {
     }
 
     pushMessage("farmer", trimmed, voice);
-    turnsRef.current = [...turnsRef.current, { role: "user", content: trimmed }].slice(-12);
+    turnsRef.current = [...turnsRef.current, { role: "user" as const, content: trimmed }].slice(-12);
     setThinking(true);
     try {
       const answer = await askAtlas({ data: { messages: turnsRef.current, lang } });
@@ -96,7 +96,7 @@ export function ChatPanel() {
         return;
       }
       const reply = answer.reply || t("outOfScope");
-      turnsRef.current = [...turnsRef.current, { role: "assistant", content: reply }].slice(-12);
+      turnsRef.current = [...turnsRef.current, { role: "assistant" as const, content: reply }].slice(-12);
       pushMessage("atlas", reply);
       setThinking(false);
       void speak(reply);

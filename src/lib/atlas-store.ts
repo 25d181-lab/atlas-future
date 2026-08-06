@@ -38,7 +38,7 @@ type AtlasState = {
   activeAgent: AgentKey | null;
   plan: AtlasPlan | null;
   runs: ExecutedRun[];
-  send: (text: string, voice?: boolean) => void;
+  send: (text: string, voice?: boolean, opts?: { skipFarmerEcho?: boolean }) => void;
   pushMessage: (from: "farmer" | "atlas", text: string, voice?: boolean) => void;
 
   approve: () => void;
@@ -71,7 +71,7 @@ export const useAtlas = create<AtlasState>((set, get) => ({
       messages: [...s.messages, { id: crypto.randomUUID(), from, text, time: now(), voice }],
     })),
 
-  send: (text, voice = false) => {
+  send: (text, voice = false, opts) => {
 
     if (get().phase === "running") return;
     const request = parseRequest(text);
@@ -80,7 +80,9 @@ export const useAtlas = create<AtlasState>((set, get) => ({
     set((s) => ({
       messages: [
         ...s.messages,
-        { id: crypto.randomUUID(), from: "farmer", text, time: now(), voice },
+        ...(opts?.skipFarmerEcho
+          ? []
+          : [{ id: crypto.randomUUID(), from: "farmer" as const, text, time: now(), voice }]),
         {
           id: crypto.randomUUID(),
           from: "atlas",
