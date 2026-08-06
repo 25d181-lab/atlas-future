@@ -229,6 +229,16 @@ export function ChatPanel() {
           </div>
         )}
 
+        {thinking && (
+          <div className="flex justify-start">
+            <div className="flex items-center gap-2 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2.5 text-xs text-muted-foreground">
+              <Loader2 className="size-3.5 animate-spin text-gold" />
+              {t("thinking")}
+            </div>
+          </div>
+        )}
+
+
         {error && (
           <p className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
             {error}
