@@ -79,8 +79,8 @@ export const useAtlas = create<AtlasState>((set, get) => ({
   send: (text, voice = false, opts) => {
 
     if (get().phase === "running") return;
-    const request = parseRequest(text);
-    const plan = buildPlan(request);
+    const request = parseRequest(text, opts?.decision);
+    const plan = buildPlan(request, opts?.decision);
 
     set((s) => ({
       messages: [
