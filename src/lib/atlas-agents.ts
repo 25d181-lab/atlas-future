@@ -8,6 +8,7 @@ import {
   type Warehouse,
   inr,
 } from "./atlas-data";
+import type { FarmerDecision } from "./assistant.functions";
 
 export type AgentKey =
   | "agroguard"
