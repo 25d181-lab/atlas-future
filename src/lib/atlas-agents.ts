@@ -320,7 +320,9 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
     },
   ];
 
-  const summary = `${request.tonnes} t ${request.crop.toLowerCase()} from ${request.village}: sell at ${mandi.name} for ₹${negotiatedPerKg}/kg after a ${storageDays}-day cold hold at ${warehouse.name}, moved by ${transporter.name}. Estimated net ${inr(netRevenue)} — about ${inr(extraIncome)} more than a same-day local sale.`;
+  const summary = sellNow
+    ? `${request.tonnes} t ${request.crop.toLowerCase()} from ${request.village}: sell today at ${mandi.name} for ₹${negotiatedPerKg}/kg, no cold hold, ${transporter.name} picking up in ${transporter.etaMinutes} minutes. Estimated net ${inr(netRevenue)} — about ${inr(extraIncome)} more than a same-day local sale.`
+    : `${request.tonnes} t ${request.crop.toLowerCase()} from ${request.village}: sell at ${mandi.name} for ₹${negotiatedPerKg}/kg after a ${storageDays}-day cold hold at ${warehouse.name}, moved by ${transporter.name}. Estimated net ${inr(netRevenue)} — about ${inr(extraIncome)} more than a same-day local sale.`;
 
   return {
     request,
