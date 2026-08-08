@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { AGENTS, buildPlan, parseRequest, type AgentKey, type AtlasPlan } from "./atlas-agents";
+import type { FarmerDecision } from "./assistant.functions";
 import { inr } from "./atlas-data";
 import { t } from "./i18n";
 
