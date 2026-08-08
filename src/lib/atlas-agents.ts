@@ -212,7 +212,9 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
       headline: `Target price locked at ₹${negotiatedPerKg}/kg with 2 verified buyers`,
       reasoning: [
         `Opened parallel quotes with 2 commission agents at ${mandi.name}.`,
-        `Used arrival shortage (${mandi.arrivalsTonnes}t vs 5-day avg) as leverage; floor set at ₹${(baselinePerKg * 1.02).toFixed(2)}/kg.`,
+        priority === "speed"
+          ? `Because you want cash today I traded ~3% of the rate for an immediate lift — floor ₹${(baselinePerKg * 1.0).toFixed(2)}/kg.`
+          : `Used arrival shortage (${mandi.arrivalsTonnes}t vs 5-day avg) as leverage; floor set at ₹${(baselinePerKg * 1.02).toFixed(2)}/kg.`,
         `Best standing offer ₹${negotiatedPerKg}/kg for Grade A, ₹${(negotiatedPerKg * 0.55).toFixed(2)}/kg for Grade B.`,
       ],
       metrics: [
@@ -223,14 +225,22 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
     },
     warehouse: {
       key: "warehouse",
-      headline: `${request.tonnes} t held at ${warehouse.name} (${warehouse.distanceKm} km)`,
-      reasoning: [
-        `Nearest ambient store (Malur) is at ${Math.round((WAREHOUSES[2]!.usedTonnes / WAREHOUSES[2]!.capacityTonnes) * 100)}% capacity — rejected.`,
-        `${warehouse.name} has ${(warehouse.capacityTonnes - warehouse.usedTonnes).toFixed(0)} t free at ₹${warehouse.ratePerTonneDay}/t/day.`,
-        `Reserved for ${storageDays} days as a price buffer if the mandi rate dips on arrival.`,
-      ],
+      headline: sellNow
+        ? `No cold hold — ${request.tonnes} t goes straight to ${mandi.name}`
+        : `${request.tonnes} t held at ${warehouse.name} (${warehouse.distanceKm} km)`,
+      reasoning: sellNow
+        ? [
+            `You asked to sell immediately, so I skipped storage and saved ${inr(warehouse.ratePerTonneDay * request.tonnes * 2)} in holding cost.`,
+            `${warehouse.name} kept on standby in case the buyer delays unloading.`,
+            `Risk: with ${WEATHER.forecast.toLowerCase()}, a same-day sale is the safer call anyway.`,
+          ]
+        : [
+            `Nearest ambient store (Malur) is at ${Math.round((WAREHOUSES[2]!.usedTonnes / WAREHOUSES[2]!.capacityTonnes) * 100)}% capacity — rejected.`,
+            `${warehouse.name} has ${(warehouse.capacityTonnes - warehouse.usedTonnes).toFixed(0)} t free at ₹${warehouse.ratePerTonneDay}/t/day.`,
+            `Reserved for ${storageDays} days${priority === "storage" ? " because you want to wait out the price dip" : " as a price buffer if the mandi rate dips on arrival"}.`,
+          ],
       metrics: [
-        { label: "Facility", value: warehouse.type },
+        { label: "Facility", value: sellNow ? "Skipped" : warehouse.type },
         { label: "Hold", value: `${storageDays} days` },
         { label: "Storage cost", value: inr(warehouse.ratePerTonneDay * request.tonnes * storageDays) },
       ],
@@ -240,8 +250,13 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
       headline: `${transporter.name} — ${transporter.vehicle}, pickup in ${transporter.etaMinutes} min`,
       reasoning: [
         `Matched vehicle capacity ${transporter.capacityTonnes}t to your ${request.tonnes}t lot to avoid part-load penalty.`,
-        `Route ${request.village} → ${warehouse.location} → ${mandi.name}, ${(warehouse.distanceKm + mandi.distanceKm).toFixed(0)} km total.`,
-        `Fare ${inr(transporter.fare)} fixed; driver rating ${transporter.rating}/5, reefer maintained at 12°C.`,
+        priority === "speed"
+          ? `Picked the fastest available vehicle (${transporter.etaMinutes} min) over the cheapest, because you want it moved now.`
+          : `Picked the cheapest vehicle that fits the lot; fare ${inr(transporter.fare)}.`,
+        sellNow
+          ? `Direct route ${request.village} → ${mandi.name}, ${mandi.distanceKm} km.`
+          : `Route ${request.village} → ${warehouse.location} → ${mandi.name}, ${(warehouse.distanceKm + mandi.distanceKm).toFixed(0)} km total.`,
+        `Driver rating ${transporter.rating}/5, reefer maintained at 12°C.`,
       ],
       metrics: [
         { label: "Pickup ETA", value: `${transporter.etaMinutes} min` },
