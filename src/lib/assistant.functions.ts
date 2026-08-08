@@ -1,12 +1,30 @@
 import { createServerFn } from "@tanstack/react-start";
+import { MANDIS, TRANSPORTERS, WAREHOUSES, WEATHER, FARMER } from "./atlas-data";
 
 export type AtlasTurn = { role: "user" | "assistant"; content: string };
+
+export type FarmerDecision = {
+  crop?: string | undefined;
+  quantityKg?: number | undefined;
+  village?: string | undefined;
+  priority?: "price" | "speed" | "storage" | "balanced" | undefined;
+  targetMandi?: string | undefined;
+  sellNow?: boolean | undefined;
+};
 
 export type AtlasAnswer = {
   intent: "sell_harvest" | "farm_question" | "out_of_scope";
   reply: string;
   language: string;
+  decision?: FarmerDecision | undefined;
 };
+
+const liveContext = () => `LIVE PLATFORM DATA (simulated, but this is the ONLY market data you may quote — never invent other numbers):
+Farmer: ${FARMER.name}, ${FARMER.village}, ${FARMER.landAcres} acres, crops ${FARMER.crops.join(", ")}.
+Weather (${WEATHER.location}): ${WEATHER.forecast}, ${WEATHER.tempC}°C, humidity ${WEATHER.humidity}%, rain probability ${(WEATHER.rainProbability * 100).toFixed(0)}%.
+Mandi prices today: ${MANDIS.map((m) => `${m.name} ₹${m.pricePerKg}/kg (72h trend ${m.trend > 0 ? "+" : ""}${m.trend}%, arrivals ${m.arrivalsTonnes}t, demand ${m.demandIndex}/100, ${m.distanceKm} km)`).join("; ")}.
+Storage: ${WAREHOUSES.map((w) => `${w.name} ${w.type}, ${(w.capacityTonnes - w.usedTonnes).toFixed(0)}t free at ₹${w.ratePerTonneDay}/t/day, ${w.distanceKm} km`).join("; ")}.
+Transport: ${TRANSPORTERS.map((t) => `${t.name} ${t.vehicle}, ${t.capacityTonnes}t, ETA ${t.etaMinutes} min, ₹${t.fare}`).join("; ")}.`;
 
 const SYSTEM = `You are ATLAS, a warm, practical AI agronomy assistant for small farmers in India (Karnataka focus).
 
@@ -16,13 +34,42 @@ mandi/market prices, selling & buyers, storage & cold chain, transport, crop ins
 RULES
 1. Detect the language of the user's LAST message and reply in THAT language (Kannada, Hindi, Tamil, Telugu, Malayalam or English), in that language's own script.
 2. Anything outside agriculture (politics, movies, coding, general chit-chat, personal advice): set intent "out_of_scope" and politely say, in the user's language, that you can only help with farming topics.
-3. If the user is reporting a finished harvest they want to sell (quantity + crop, or asking to sell), set intent "sell_harvest" and reply with one short line confirming you will arrange it.
-4. Otherwise intent is "farm_question": give a direct, practical answer in 2-5 short sentences. Use simple words, concrete numbers/doses, and local units (acre, quintal, ₹/kg). No markdown, no bullet symbols — plain spoken sentences, because the answer is read aloud.
-5. Use earlier turns for context; never invent official data — say clearly when a figure is an estimate.
+3. ANSWER THE ACTUAL QUESTION ASKED. Price questions get the specific mandi name, ₹/kg and trend from LIVE PLATFORM DATA. Disease questions get the likely disease name, the spray/dose and the timing. Weather questions get the forecast and what to do about it. Storage/transport questions get the named facility or vehicle with cost. Never give a generic answer when the live data can answer it.
+4. If the user reports a harvest they want to sell / move / store (quantity + crop, or "sell my crop"), set intent "sell_harvest", reply with one short line confirming you will arrange it, and fill "decision" with what they actually asked for.
+5. Otherwise intent is "farm_question": a direct, practical answer in 2-5 short sentences. Simple words, concrete numbers/doses, local units (acre, quintal, ₹/kg). No markdown, no bullet symbols — plain spoken sentences, because the answer is read aloud.
+6. Use earlier turns for context; say clearly when a figure is an estimate.
 
-Respond ONLY as JSON: {"intent": "...", "reply": "...", "language": "<ISO code: en|kn|hi|ta|te|ml>"}`;
+"decision" (only for sell_harvest; omit unknown fields):
+  crop: English crop name, e.g. "Tomato"
+  quantityKg: number in kilograms
+  village: pickup village if mentioned
+  priority: "price" (best rate, willing to wait) | "speed" (sell/move today, cash now) | "storage" (hold and wait for better price) | "balanced"
+  targetMandi: mandi name if the farmer named one
+  sellNow: true if they want it sold/moved immediately with no cold hold
+
+Respond ONLY as JSON: {"intent": "...", "reply": "...", "language": "<ISO code: en|kn|hi|ta|te|ml>", "decision": {...}}`;
 
 type AskInput = { messages: AtlasTurn[]; lang?: string | undefined };
+
+function normalizeDecision(value: unknown): FarmerDecision | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const raw = value as Record<string, unknown>;
+  const priority =
+    raw["priority"] === "price" || raw["priority"] === "speed" || raw["priority"] === "storage"
+      ? (raw["priority"] as "price" | "speed" | "storage")
+      : "balanced";
+  const quantity = typeof raw["quantityKg"] === "number" && raw["quantityKg"] > 0 ? raw["quantityKg"] : undefined;
+  const decision: FarmerDecision = {
+    crop: typeof raw["crop"] === "string" && raw["crop"].trim() ? raw["crop"].trim() : undefined,
+    quantityKg: quantity,
+    village: typeof raw["village"] === "string" && raw["village"].trim() ? raw["village"].trim() : undefined,
+    priority,
+    targetMandi:
+      typeof raw["targetMandi"] === "string" && raw["targetMandi"].trim() ? raw["targetMandi"].trim() : undefined,
+    sellNow: raw["sellNow"] === true,
+  };
+  return decision;
+}
 
 export const askAtlas = createServerFn({ method: "POST" })
   .inputValidator((data: AskInput) => {
@@ -50,6 +97,7 @@ export const askAtlas = createServerFn({ method: "POST" })
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM },
+          { role: "system", content: liveContext() },
           ...(data.lang
             ? [
                 {
@@ -75,20 +123,23 @@ export const askAtlas = createServerFn({ method: "POST" })
       choices?: { message?: { content?: string } }[];
     };
     const raw = json.choices?.[0]?.message?.content ?? "{}";
-    let parsed: Partial<AtlasAnswer> = {};
+    let parsed: Partial<AtlasAnswer> & { decision?: unknown } = {};
     try {
       parsed = JSON.parse(raw) as Partial<AtlasAnswer>;
     } catch {
       parsed = { intent: "farm_question", reply: raw };
     }
 
+    const intent =
+      parsed.intent === "sell_harvest" || parsed.intent === "out_of_scope"
+        ? parsed.intent
+        : "farm_question";
+
     return {
-      intent:
-        parsed.intent === "sell_harvest" || parsed.intent === "out_of_scope"
-          ? parsed.intent
-          : "farm_question",
+      intent,
       reply: (parsed.reply ?? "").trim(),
       language: parsed.language ?? data.lang ?? "en",
+      decision: intent === "sell_harvest" ? normalizeDecision(parsed.decision) : undefined,
     };
   });
 

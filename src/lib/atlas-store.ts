@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { AGENTS, buildPlan, parseRequest, type AgentKey, type AtlasPlan } from "./atlas-agents";
+import type { FarmerDecision } from "./assistant.functions";
 import { inr } from "./atlas-data";
 import { t } from "./i18n";
 
@@ -38,7 +39,11 @@ type AtlasState = {
   activeAgent: AgentKey | null;
   plan: AtlasPlan | null;
   runs: ExecutedRun[];
-  send: (text: string, voice?: boolean, opts?: { skipFarmerEcho?: boolean }) => void;
+  send: (
+    text: string,
+    voice?: boolean,
+    opts?: { skipFarmerEcho?: boolean; decision?: FarmerDecision | undefined },
+  ) => void;
   pushMessage: (from: "farmer" | "atlas", text: string, voice?: boolean) => void;
 
   approve: () => void;
@@ -74,8 +79,8 @@ export const useAtlas = create<AtlasState>((set, get) => ({
   send: (text, voice = false, opts) => {
 
     if (get().phase === "running") return;
-    const request = parseRequest(text);
-    const plan = buildPlan(request);
+    const request = parseRequest(text, opts?.decision);
+    const plan = buildPlan(request, opts?.decision);
 
     set((s) => ({
       messages: [
