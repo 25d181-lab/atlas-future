@@ -39,7 +39,11 @@ type AtlasState = {
   activeAgent: AgentKey | null;
   plan: AtlasPlan | null;
   runs: ExecutedRun[];
-  send: (text: string, voice?: boolean, opts?: { skipFarmerEcho?: boolean }) => void;
+  send: (
+    text: string,
+    voice?: boolean,
+    opts?: { skipFarmerEcho?: boolean; decision?: FarmerDecision | undefined },
+  ) => void;
   pushMessage: (from: "farmer" | "atlas", text: string, voice?: boolean) => void;
 
   approve: () => void;
