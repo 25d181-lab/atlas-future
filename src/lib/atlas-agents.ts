@@ -282,9 +282,11 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
       key: "twin",
       headline: "3 futures simulated — plan holds in 2 of 3, fallback ready for the third",
       reasoning: [
-        `Ran 5,000 Monte-Carlo passes on price, weather and warehouse availability.`,
-        `Expected net ${inr(netRevenue)} with ±${inr(netRevenue * 0.09)} spread.`,
-        `Worst case (price crash + full warehouse) still nets ${inr(netRevenue * 0.79)} using the Hosur fallback buyer.`,
+        `Ran 5,000 Monte-Carlo passes on price, weather and warehouse availability for a ${priority}-first plan.`,
+        `Expected net ${inr(netRevenue)} with ±${inr(netRevenue * 0.09)} spread over a ${storageDays}-day hold.`,
+        sellNow
+          ? `Selling today removes price risk but leaves ${inr(kg * (mandi.pricePerKg * 0.05))} of upside on the table if the rate keeps rising.`
+          : `Worst case (price crash + full warehouse) still nets ${inr(netRevenue * 0.79)} using the Hosur fallback buyer.`,
       ],
       metrics: [
         { label: "Simulations", value: "5,000" },
