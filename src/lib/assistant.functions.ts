@@ -123,20 +123,23 @@ export const askAtlas = createServerFn({ method: "POST" })
       choices?: { message?: { content?: string } }[];
     };
     const raw = json.choices?.[0]?.message?.content ?? "{}";
-    let parsed: Partial<AtlasAnswer> = {};
+    let parsed: Partial<AtlasAnswer> & { decision?: unknown } = {};
     try {
       parsed = JSON.parse(raw) as Partial<AtlasAnswer>;
     } catch {
       parsed = { intent: "farm_question", reply: raw };
     }
 
+    const intent =
+      parsed.intent === "sell_harvest" || parsed.intent === "out_of_scope"
+        ? parsed.intent
+        : "farm_question";
+
     return {
-      intent:
-        parsed.intent === "sell_harvest" || parsed.intent === "out_of_scope"
-          ? parsed.intent
-          : "farm_question",
+      intent,
       reply: (parsed.reply ?? "").trim(),
       language: parsed.language ?? data.lang ?? "en",
+      decision: intent === "sell_harvest" ? normalizeDecision(parsed.decision) : undefined,
     };
   });
 
