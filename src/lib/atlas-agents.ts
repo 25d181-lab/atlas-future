@@ -180,7 +180,9 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
       reasoning: [
         `Scanned last 3 field images + ${request.village} plot history: no late blight or fruit borer signature.`,
         `Humidity ${WEATHER.humidity}% with ${WEATHER.forecast.toLowerCase()} → shelf life drops to ~${storageDays + 1} days if left in the open.`,
-        `Recommendation: move to cold chain within 12 hours to protect Grade A share.`,
+        sellNow
+          ? `You want it moved today, so grading is done at the truck and the lot ships straight to ${mandi.name}.`
+          : `Recommendation: move to cold chain within 12 hours to protect Grade A share.`,
       ],
       metrics: [
         { label: "Grade A share", value: `${Math.round(gradeShare * 100)}%` },
@@ -192,7 +194,10 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
       key: "demand",
       headline: `${mandi.name} is the best market at ${inr(mandi.pricePerKg)}/kg (${mandi.trend > 0 ? "+" : ""}${mandi.trend}% in 72h)`,
       reasoning: [
-        `Compared 5 mandis on price, arrivals, demand index and haul distance.`,
+        priorityLine,
+        named
+          ? `You named ${mandi.name}, so I priced your lot there instead of running a free market search.`
+          : `Compared 5 mandis on price, arrivals, demand index and haul distance.`,
         `${mandi.name}: arrivals ${mandi.arrivalsTonnes}t, demand index ${mandi.demandIndex}/100, ${mandi.distanceKm} km away.`,
         `Next best ${runnerUp.name} at ₹${runnerUp.pricePerKg}/kg — rejected, ₹${(mandi.pricePerKg - runnerUp.pricePerKg).toFixed(1)}/kg lower.`,
       ],
