@@ -92,7 +92,10 @@ export function ChatPanel() {
       const answer = await askAtlas({ data: { messages: turnsRef.current, lang } });
       if (answer.intent === "sell_harvest") {
         setThinking(false);
-        send(trimmed, voice, { skipFarmerEcho: true });
+        if (answer.reply) {
+          turnsRef.current = [...turnsRef.current, { role: "assistant" as const, content: answer.reply }].slice(-12);
+        }
+        send(trimmed, voice, { skipFarmerEcho: true, decision: answer.decision });
         return;
       }
       const reply = answer.reply || t("outOfScope");
