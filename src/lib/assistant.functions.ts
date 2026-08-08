@@ -97,6 +97,7 @@ export const askAtlas = createServerFn({ method: "POST" })
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: SYSTEM },
+          { role: "system", content: liveContext() },
           ...(data.lang
             ? [
                 {
