@@ -75,7 +75,7 @@ export type AtlasPlan = {
 
 const CROPS = ["tomato", "tomatoes", "onion", "potato", "ragi", "beans", "capsicum", "marigold"];
 
-export function parseRequest(text: string): ParsedRequest {
+export function parseRequest(text: string, decision?: FarmerDecision): ParsedRequest {
   const lower = text.toLowerCase();
   const qtyMatch = lower.match(/(\d+(?:\.\d+)?)\s*(ton|tonne|tons|tonnes|t\b|quintal|kg)/);
   let tonnes = 2;
@@ -84,43 +84,93 @@ export function parseRequest(text: string): ParsedRequest {
     const unit = qtyMatch[2]!;
     tonnes = unit.startsWith("kg") ? n / 1000 : unit.startsWith("quintal") ? n / 10 : n;
   }
+  if (decision?.quantityKg && decision.quantityKg > 0) tonnes = decision.quantityKg / 1000;
+
   const cropHit = CROPS.find((c) => lower.includes(c));
-  const crop = cropHit ? (cropHit === "tomatoes" ? "Tomato" : cropHit[0]!.toUpperCase() + cropHit.slice(1)) : "Tomato";
+  let crop = cropHit ? (cropHit === "tomatoes" ? "Tomato" : cropHit[0]!.toUpperCase() + cropHit.slice(1)) : "Tomato";
+  if (decision?.crop) crop = decision.crop[0]!.toUpperCase() + decision.crop.slice(1);
+
   const villageMatch = text.match(/\b(?:in|at|from|near)\s+([A-Za-z][A-Za-z\s]{2,24})/i);
-  const village = villageMatch ? villageMatch[1]!.trim().replace(/\s+(village|today|now)$/i, "") : "Vemagal, Kolar";
+  let village = villageMatch
+    ? villageMatch[1]!.trim().replace(/\s+(village|today|now)$/i, "")
+    : "Vemagal, Kolar";
+  if (decision?.village) village = decision.village;
+
   return { crop, tonnes: Math.max(0.1, tonnes), village, raw: text };
 }
 
-export function buildPlan(request: ParsedRequest): AtlasPlan {
+export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): AtlasPlan {
   const kg = request.tonnes * 1000;
+  const priority = decision?.priority ?? "balanced";
+  const sellNow = decision?.sellNow === true || priority === "speed";
 
   // Demand: score mandis on price, demand, distance and forecast trend.
+  // Weights shift with what the farmer actually asked for.
+  const weights =
+    priority === "price"
+      ? { price: 4.5, trend: 2.4, demand: 0.08, distance: 0.015 }
+      : priority === "speed"
+        ? { price: 1.6, trend: 0.4, demand: 0.05, distance: 0.14 }
+        : priority === "storage"
+          ? { price: 3.6, trend: 3.2, demand: 0.1, distance: 0.03 }
+          : { price: 3, trend: 1.6, demand: 0.08, distance: 0.045 };
+
+  const named = decision?.targetMandi
+    ? MANDIS.find((m) => m.name.toLowerCase().includes(decision.targetMandi!.toLowerCase().split(" ")[0]!))
+    : undefined;
+
   const scored = MANDIS.map((m) => ({
     m,
-    score: m.pricePerKg * 3 + m.trend * 1.6 + m.demandIndex * 0.08 - m.distanceKm * 0.045,
+    score:
+      m.pricePerKg * weights.price +
+      m.trend * weights.trend +
+      m.demandIndex * weights.demand -
+      m.distanceKm * weights.distance +
+      (named && named.name === m.name ? 1000 : 0),
   })).sort((a, b) => b.score - a.score);
   const mandi = scored[0]!.m;
   const runnerUp = scored[1]!.m;
 
+  const eligibleStores = WAREHOUSES.filter(
+    (w) => w.capacityTonnes - w.usedTonnes >= request.tonnes && w.type !== "Ambient",
+  );
   const warehouse =
-    WAREHOUSES.filter((w) => w.capacityTonnes - w.usedTonnes >= request.tonnes && w.type !== "Ambient").sort(
-      (a, b) => a.distanceKm - b.distanceKm,
-    )[0] ?? WAREHOUSES[0]!;
+    (priority === "storage"
+      ? [...eligibleStores]
+          .filter((w) => w.type === "Cold storage")
+          .sort((a, b) => b.capacityTonnes - b.usedTonnes - (a.capacityTonnes - a.usedTonnes))[0]
+      : undefined) ??
+    [...eligibleStores].sort((a, b) => a.distanceKm - b.distanceKm)[0] ??
+    WAREHOUSES[0]!;
 
+  const fitting = TRANSPORTERS.filter((t) => t.capacityTonnes >= request.tonnes);
   const transporter =
-    TRANSPORTERS.filter((t) => t.capacityTonnes >= request.tonnes).sort((a, b) => a.fare - b.fare)[0] ??
+    (priority === "speed"
+      ? [...fitting].sort((a, b) => a.etaMinutes - b.etaMinutes)[0]
+      : [...fitting].sort((a, b) => a.fare - b.fare)[0]) ??
     TRANSPORTERS[TRANSPORTERS.length - 1]!;
 
   const gradeShare = 0.86;
   const baselinePerKg = mandi.pricePerKg;
-  const negotiatedPerKg = +(baselinePerKg * 1.075 + 0.4).toFixed(2);
+  const negotiationEdge = priority === "price" ? 1.095 : priority === "speed" ? 1.04 : 1.075;
+  const negotiatedPerKg = +(baselinePerKg * negotiationEdge + 0.4).toFixed(2);
   const grossRevenue = kg * negotiatedPerKg * gradeShare + kg * (1 - gradeShare) * (negotiatedPerKg * 0.55);
-  const storageDays = 2;
+  const storageDays = sellNow ? 0 : priority === "storage" ? 4 : priority === "price" ? 3 : 2;
   const costs = transporter.fare + warehouse.ratePerTonneDay * request.tonnes * storageDays + kg * 0.35;
   const netRevenue = grossRevenue - costs;
   const localBaseline = kg * (baselinePerKg * 0.82);
   const extraIncome = netRevenue - localBaseline;
-  const wasteAvoidedKg = Math.round(kg * 0.14);
+  const wasteAvoidedKg = Math.round(kg * (sellNow ? 0.08 : 0.14));
+
+  const priorityLine =
+    priority === "price"
+      ? "You asked for the best price, so I optimised for rate and trend over distance."
+      : priority === "speed"
+        ? "You asked to move it today, so I optimised for the fastest pickup and nearest buyer, not the top rate."
+        : priority === "storage"
+          ? "You asked to hold and wait, so I picked the market with the strongest 72-hour upside and the roomiest cold store."
+          : "No special preference given, so I balanced price, distance and risk.";
+
 
   const results: Record<AgentKey, AgentResult> = {
     agroguard: {
