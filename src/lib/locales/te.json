@@ -203,5 +203,16 @@
   "lever.demandSpike": "డిమాండ్ పెరుగుదల",
   "lever.demandDrop": "డిమాండ్ తగ్గడం",
   "lever.roadClosure": "రోడ్డు మూసివేత",
-  "lever.warehouseFull": "వేర్‌హౌస్ నిండింది"
+  "lever.warehouseFull": "వేర్‌హౌస్ నిండింది",
+  "learnView": "నేర్చుకోండి",
+  "skillsTitle": "వ్యవసాయం కోసం IBM SkillsBuild",
+  "skillsSub": "రైతులు, FPO సిబ్బంది మరియు గ్రామీణ యువతకు ఉచిత IBM కోర్సులు మరియు డిజిటల్ ధృవపత్రాలు.",
+  "poweredByWatsonx": "IBM watsonx ఆధారితం",
+  "hours": "గంటలు",
+  "digitalCredential": "డిజిటల్ ధృవపత్రం",
+  "skillsFooter": "కోర్సులు skillsbuild.org లో తెరుచుకుంటాయి. పూర్తి చేస్తే IBM డిజిటల్ బ్యాడ్జ్ లభిస్తుంది.",
+  "Beginner": "ప్రారంభ",
+  "Intermediate": "మధ్యస్థ",
+  "watsonxEngine": "IBM watsonx Granite",
+  "aiEngine": "AI ఇంజిన్"
 }

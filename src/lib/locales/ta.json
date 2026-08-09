@@ -203,5 +203,16 @@
   "lever.demandSpike": "தேவை திடீர் உயர்வு",
   "lever.demandDrop": "தேவை சரிவு",
   "lever.roadClosure": "சாலை அடைப்பு",
-  "lever.warehouseFull": "கிடங்கு நிரம்பியது"
+  "lever.warehouseFull": "கிடங்கு நிரம்பியது",
+  "learnView": "கற்க",
+  "skillsTitle": "விவசாயத்திற்கான IBM SkillsBuild",
+  "skillsSub": "விவசாயிகள், FPO ஊழியர்கள் மற்றும் கிராம இளைஞர்களுக்கு இலவச IBM பாடங்கள் மற்றும் டிஜிட்டல் சான்றிதழ்கள்.",
+  "poweredByWatsonx": "IBM watsonx மூலம் இயங்குகிறது",
+  "hours": "மணி",
+  "digitalCredential": "டிஜிட்டல் சான்றிதழ்",
+  "skillsFooter": "பாடங்கள் skillsbuild.org இல் திறக்கும். முடித்தால் IBM டிஜிட்டல் பேட்ஜ் கிடைக்கும்.",
+  "Beginner": "தொடக்கநிலை",
+  "Intermediate": "இடைநிலை",
+  "watsonxEngine": "IBM watsonx Granite",
+  "aiEngine": "AI இயந்திரம்"
 }

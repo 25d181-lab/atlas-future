@@ -203,5 +203,16 @@
   "lever.demandSpike": "ಬೇಡಿಕೆ ಹೆಚ್ಚಳ",
   "lever.demandDrop": "ಬೇಡಿಕೆ ಇಳಿಕೆ",
   "lever.roadClosure": "ರಸ್ತೆ ಮುಚ್ಚುವಿಕೆ",
-  "lever.warehouseFull": "ಗೋದಾಮು ಭರ್ತಿಯಾಗಿದೆ"
+  "lever.warehouseFull": "ಗೋದಾಮು ಭರ್ತಿಯಾಗಿದೆ",
+  "learnView": "ಕಲಿಯಿರಿ",
+  "skillsTitle": "ಕೃಷಿಗಾಗಿ IBM SkillsBuild",
+  "skillsSub": "ರೈತರು, FPO ಸಿಬ್ಬಂದಿ ಮತ್ತು ಗ್ರಾಮೀಣ ಯುವಕರಿಗೆ ಉಚಿತ IBM ಕೋರ್ಸ್‌ಗಳು ಮತ್ತು ಡಿಜಿಟಲ್ ಪ್ರಮಾಣಪತ್ರಗಳು.",
+  "poweredByWatsonx": "IBM watsonx ಚಾಲಿತ",
+  "hours": "ಗಂಟೆ",
+  "digitalCredential": "ಡಿಜಿಟಲ್ ಪ್ರಮಾಣಪತ್ರ",
+  "skillsFooter": "ಕೋರ್ಸ್‌ಗಳು skillsbuild.org ನಲ್ಲಿ ತೆರೆಯುತ್ತವೆ. ಪೂರ್ಣಗೊಳಿಸಿದರೆ IBM ಡಿಜಿಟಲ್ ಬ್ಯಾಡ್ಜ್ ಸಿಗುತ್ತದೆ.",
+  "Beginner": "ಆರಂಭಿಕ",
+  "Intermediate": "ಮಧ್ಯಮ",
+  "watsonxEngine": "IBM watsonx Granite",
+  "aiEngine": "AI ಎಂಜಿನ್"
 }

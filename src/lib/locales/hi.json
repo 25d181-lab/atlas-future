@@ -203,5 +203,16 @@
   "lever.demandSpike": "मांग में उछाल",
   "lever.demandDrop": "मांग में गिरावट",
   "lever.roadClosure": "सड़क बंद",
-  "lever.warehouseFull": "गोदाम भरा हुआ"
+  "lever.warehouseFull": "गोदाम भरा हुआ",
+  "learnView": "सीखें",
+  "skillsTitle": "कृषि के लिए IBM SkillsBuild",
+  "skillsSub": "किसानों, FPO कर्मचारियों और ग्रामीण युवाओं के लिए मुफ़्त IBM कोर्स और डिजिटल क्रेडेंशियल।",
+  "poweredByWatsonx": "IBM watsonx द्वारा संचालित",
+  "hours": "घंटे",
+  "digitalCredential": "डिजिटल क्रेडेंशियल",
+  "skillsFooter": "कोर्स skillsbuild.org पर खुलते हैं। पूरा करने पर IBM डिजिटल बैज मिलता है जिसे आप खरीदारों, बैंकों और नियोक्ताओं के साथ साझा कर सकते हैं।",
+  "Beginner": "शुरुआती",
+  "Intermediate": "मध्यम",
+  "watsonxEngine": "IBM watsonx Granite",
+  "aiEngine": "AI इंजन"
 }
