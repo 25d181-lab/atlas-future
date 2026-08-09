@@ -18,7 +18,9 @@ export type AtlasAnswer = {
   reply: string;
   language: string;
   decision?: FarmerDecision | undefined;
+  engine?: "watsonx" | "lovable" | undefined;
 };
+
 
 const liveContext = () => `LIVE PLATFORM DATA (simulated, but this is the ONLY market data you may quote — never invent other numbers):
 Farmer: ${FARMER.name}, ${FARMER.village}, ${FARMER.landAcres} acres, crops ${FARMER.crops.join(", ")}.
