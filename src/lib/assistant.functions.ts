@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { MANDIS, TRANSPORTERS, WAREHOUSES, WEATHER, FARMER } from "./atlas-data";
+import { watsonxChat, watsonxConfigured } from "./watsonx.server";
 
 export type AtlasTurn = { role: "user" | "assistant"; content: string };
 
@@ -17,7 +18,9 @@ export type AtlasAnswer = {
   reply: string;
   language: string;
   decision?: FarmerDecision | undefined;
+  engine?: "watsonx" | "lovable" | undefined;
 };
+
 
 const liveContext = () => `LIVE PLATFORM DATA (simulated, but this is the ONLY market data you may quote — never invent other numbers):
 Farmer: ${FARMER.name}, ${FARMER.village}, ${FARMER.landAcres} acres, crops ${FARMER.crops.join(", ")}.
@@ -86,46 +89,65 @@ export const askAtlas = createServerFn({ method: "POST" })
     return { messages, lang: typeof data.lang === "string" ? data.lang : undefined };
   })
   .handler(async ({ data }): Promise<AtlasAnswer> => {
-    const apiKey = process.env["LOVABLE_API_KEY"];
-    if (!apiKey) throw new Error("The AI assistant is not configured.");
+    const systemTurns = [
+      { role: "system" as const, content: SYSTEM },
+      { role: "system" as const, content: liveContext() },
+      ...(data.lang
+        ? [
+            {
+              role: "system" as const,
+              content: `The farmer's app language is "${data.lang}". If the last message language is unclear, reply in "${data.lang}".`,
+            },
+          ]
+        : []),
+    ];
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-3.6-flash",
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "system", content: liveContext() },
-          ...(data.lang
-            ? [
-                {
-                  role: "system" as const,
-                  content: `The farmer's app language is "${data.lang}". If the last message language is unclear, reply in "${data.lang}".`,
-                },
-              ]
-            : []),
-          ...data.messages,
-        ],
-      }),
-    });
+    let raw: string | null = null;
+    let engine: AtlasAnswer["engine"] = "watsonx";
 
-    if (!response.ok) {
-      const body = await response.text().catch(() => "");
-      console.error(`Assistant failed [${response.status}]: ${body}`);
-      if (response.status === 429) throw new Error("Too many requests — try again in a moment.");
-      if (response.status === 402) throw new Error("AI credits exhausted for this workspace.");
-      throw new Error(`Assistant failed (${response.status}).`);
+    // Primary reasoning engine: IBM watsonx.ai (Granite).
+    if (watsonxConfigured()) {
+      try {
+        raw = await watsonxChat([...systemTurns, ...data.messages], { json: true });
+      } catch (error) {
+        console.error("watsonx assistant failed, falling back:", error);
+        raw = null;
+      }
     }
 
-    const json = (await response.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const raw = json.choices?.[0]?.message?.content ?? "{}";
+    if (raw === null) {
+      engine = "lovable";
+      const apiKey = process.env["LOVABLE_API_KEY"];
+      if (!apiKey) throw new Error("The AI assistant is not configured.");
+
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3.6-flash",
+          response_format: { type: "json_object" },
+          messages: [...systemTurns, ...data.messages],
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => "");
+        console.error(`Assistant failed [${response.status}]: ${body}`);
+        if (response.status === 429) throw new Error("Too many requests — try again in a moment.");
+        if (response.status === 402) throw new Error("AI credits exhausted for this workspace.");
+        throw new Error(`Assistant failed (${response.status}).`);
+      }
+
+      const json = (await response.json()) as {
+        choices?: { message?: { content?: string } }[];
+      };
+      raw = json.choices?.[0]?.message?.content ?? "{}";
+    }
+
     let parsed: Partial<AtlasAnswer> & { decision?: unknown } = {};
     try {
-      parsed = JSON.parse(raw) as Partial<AtlasAnswer>;
+      const cleaned = raw.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+      parsed = JSON.parse(cleaned) as Partial<AtlasAnswer>;
     } catch {
       parsed = { intent: "farm_question", reply: raw };
     }
@@ -140,8 +162,10 @@ export const askAtlas = createServerFn({ method: "POST" })
       reply: (parsed.reply ?? "").trim(),
       language: parsed.language ?? data.lang ?? "en",
       decision: intent === "sell_harvest" ? normalizeDecision(parsed.decision) : undefined,
+      engine,
     };
   });
+
 
 type SpeakInput = { text: string };
 

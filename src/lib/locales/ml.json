@@ -203,5 +203,16 @@
   "lever.demandSpike": "ഡിമാൻഡ് വർദ്ധനവ്",
   "lever.demandDrop": "ഡിമാൻഡ് ഇടിവ്",
   "lever.roadClosure": "റോഡ് അടച്ചിടൽ",
-  "lever.warehouseFull": "വെയർഹൗസ് നിറഞ്ഞു"
+  "lever.warehouseFull": "വെയർഹൗസ് നിറഞ്ഞു",
+  "learnView": "പഠിക്കുക",
+  "skillsTitle": "കൃഷിക്കായി IBM SkillsBuild",
+  "skillsSub": "കർഷകർ, FPO ജീവനക്കാർ, ഗ്രാമീണ യുവാക്കൾ എന്നിവർക്ക് സൗജന്യ IBM കോഴ്‌സുകളും ഡിജിറ്റൽ സർട്ടിഫിക്കറ്റുകളും.",
+  "poweredByWatsonx": "IBM watsonx പിന്തുണയോടെ",
+  "hours": "മണിക്കൂർ",
+  "digitalCredential": "ഡിജിറ്റൽ സർട്ടിഫിക്കറ്റ്",
+  "skillsFooter": "കോഴ്‌സുകൾ skillsbuild.org ൽ തുറക്കും. പൂർത്തിയാക്കിയാൽ IBM ഡിജിറ്റൽ ബാഡ്ജ് ലഭിക്കും.",
+  "Beginner": "തുടക്കക്കാർ",
+  "Intermediate": "ഇടത്തരം",
+  "watsonxEngine": "IBM watsonx Granite",
+  "aiEngine": "AI എഞ്ചിൻ"
 }

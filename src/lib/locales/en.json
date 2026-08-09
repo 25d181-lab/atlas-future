@@ -203,5 +203,16 @@
   "lever.demandSpike": "Demand spike",
   "lever.demandDrop": "Demand drop",
   "lever.roadClosure": "Road closure",
-  "lever.warehouseFull": "Warehouse full"
+  "lever.warehouseFull": "Warehouse full",
+  "learnView": "Learn",
+  "skillsTitle": "IBM SkillsBuild for Agriculture",
+  "skillsSub": "Free IBM courses and digital credentials for farmers, FPO staff and rural youth.",
+  "poweredByWatsonx": "Powered by IBM watsonx",
+  "hours": "hours",
+  "digitalCredential": "Digital credential",
+  "skillsFooter": "Courses open on skillsbuild.org. Completion earns an IBM digital badge you can share with buyers, banks and employers.",
+  "Beginner": "Beginner",
+  "Intermediate": "Intermediate",
+  "watsonxEngine": "IBM watsonx Granite",
+  "aiEngine": "AI engine"
 }

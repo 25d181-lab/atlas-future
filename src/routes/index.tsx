@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Building2, Sprout, BrainCircuit } from "lucide-react";
+import { Building2, Sprout, BrainCircuit, GraduationCap, Cpu } from "lucide-react";
 import { ChatPanel } from "@/components/atlas/ChatPanel";
 import { AgentPipeline } from "@/components/atlas/AgentPipeline";
 import { DigitalTwinPanel } from "@/components/atlas/DigitalTwinPanel";
@@ -12,7 +12,9 @@ import { AdminDashboard } from "@/components/atlas/AdminDashboard";
 import { LanguageSwitcher } from "@/components/atlas/LanguageSwitcher";
 import { FarmIntelligencePanel } from "@/components/atlas/FarmIntelligencePanel";
 import { RegionalIntelligencePanel } from "@/components/atlas/RegionalIntelligencePanel";
+import { SkillsBuildPanel } from "@/components/atlas/SkillsBuildPanel";
 import { useT } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,7 +37,7 @@ export const Route = createFileRoute("/")({
   component: AtlasPage,
 });
 
-type View = "farmer" | "intelligence" | "admin";
+type View = "farmer" | "intelligence" | "learn" | "admin";
 
 function AtlasPage() {
   const [view, setView] = useState<View>("farmer");
@@ -55,12 +57,17 @@ function AtlasPage() {
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
+        <span className="flex items-center gap-1.5 rounded-full border border-border bg-surface-2/60 px-3 py-1.5 text-[11px] text-muted-foreground">
+          <Cpu className="size-3.5 text-gold" />
+          {tr("poweredByWatsonx")}
+        </span>
         <LanguageSwitcher />
         <div className="flex items-center gap-2 rounded-full border border-border bg-surface-2/60 p-1">
           {(
             [
               { id: "farmer", label: tr("farmerView"), icon: Sprout },
               { id: "intelligence", label: tr("intelligenceView"), icon: BrainCircuit },
+              { id: "learn", label: tr("learnView"), icon: GraduationCap },
               { id: "admin", label: tr("adminView"), icon: Building2 },
             ] as const
           ).map((t) => (
@@ -105,6 +112,8 @@ function AtlasPage() {
           <RegionalIntelligencePanel />
           <DigitalTwinPanel />
         </div>
+      ) : view === "learn" ? (
+        <SkillsBuildPanel />
       ) : (
         <AdminDashboard />
       )}
