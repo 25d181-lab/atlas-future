@@ -37,7 +37,7 @@ export const Route = createFileRoute("/")({
   component: AtlasPage,
 });
 
-type View = "farmer" | "intelligence" | "admin";
+type View = "farmer" | "intelligence" | "learn" | "admin";
 
 function AtlasPage() {
   const [view, setView] = useState<View>("farmer");
