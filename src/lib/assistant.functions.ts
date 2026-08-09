@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { MANDIS, TRANSPORTERS, WAREHOUSES, WEATHER, FARMER } from "./atlas-data";
+import { watsonxChat, watsonxConfigured } from "./watsonx.server";
 
 export type AtlasTurn = { role: "user" | "assistant"; content: string };
 
