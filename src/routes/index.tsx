@@ -112,6 +112,8 @@ function AtlasPage() {
           <RegionalIntelligencePanel />
           <DigitalTwinPanel />
         </div>
+      ) : view === "learn" ? (
+        <SkillsBuildPanel />
       ) : (
         <AdminDashboard />
       )}
