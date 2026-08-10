@@ -57,6 +57,9 @@ export type ParsedRequest = { crop: string; tonnes: number; village: string; raw
 
 export type AtlasPlan = {
   request: ParsedRequest;
+  priority: string;
+  sellNow: boolean;
+  storageDays: number;
   mandi: Mandi;
   warehouse: Warehouse;
   transporter: Transporter;
@@ -326,6 +329,9 @@ export function buildPlan(request: ParsedRequest, decision?: FarmerDecision): At
 
   return {
     request,
+    priority,
+    sellNow,
+    storageDays,
     mandi,
     warehouse,
     transporter,

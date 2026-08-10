@@ -3,6 +3,8 @@ import { AGENTS, buildPlan, parseRequest, type AgentKey, type AtlasPlan } from "
 import type { FarmerDecision } from "./assistant.functions";
 import { inr } from "./atlas-data";
 import { t } from "./i18n";
+import { agentBriefs, type AgentBriefs } from "./agents.functions";
+import { useI18n } from "./i18n";
 
 export type ChatMessage = {
   id: string;
@@ -38,6 +40,9 @@ type AtlasState = {
   statuses: Record<AgentKey, AgentStatus>;
   activeAgent: AgentKey | null;
   plan: AtlasPlan | null;
+  briefs: Partial<Record<AgentKey, string>>;
+  briefEngine: AgentBriefs["engine"] | null;
+  verdict: string;
   runs: ExecutedRun[];
   send: (
     text: string,
@@ -69,6 +74,9 @@ export const useAtlas = create<AtlasState>((set, get) => ({
   statuses: emptyStatuses(),
   activeAgent: null,
   plan: null,
+  briefs: {},
+  briefEngine: null,
+  verdict: "",
   runs: [],
 
   pushMessage: (from, text, voice = false) =>
@@ -103,7 +111,33 @@ export const useAtlas = create<AtlasState>((set, get) => ({
       statuses: emptyStatuses(),
       activeAgent: null,
       plan: null,
+      briefs: {},
+      briefEngine: null,
+      verdict: "",
     }));
+
+    // IBM watsonx (Granite) reviews the plan and issues a decision note per agent.
+    void agentBriefs({
+      data: {
+        crop: plan.request.crop,
+        tonnes: plan.request.tonnes,
+        village: plan.request.village,
+        priority: plan.priority,
+        sellNow: plan.sellNow,
+        mandi: plan.mandi.name,
+        mandiPrice: plan.mandi.pricePerKg,
+        mandiTrend: plan.mandi.trend,
+        warehouse: plan.warehouse.name,
+        storageDays: plan.storageDays,
+        transporter: `${plan.transporter.name} (${plan.transporter.vehicle})`,
+        etaMinutes: plan.transporter.etaMinutes,
+        negotiatedPerKg: plan.economics.negotiatedPerKg,
+        netRevenue: plan.economics.netRevenue,
+        lang: useI18n.getState().lang,
+      },
+    })
+      .then((res) => set({ briefs: res.notes, briefEngine: res.engine, verdict: res.verdict }))
+      .catch((error) => console.error("watsonx agent review failed:", error));
 
     void (async () => {
       for (const agent of AGENTS) {
@@ -171,6 +205,9 @@ export const useAtlas = create<AtlasState>((set, get) => ({
       statuses: emptyStatuses(),
       activeAgent: null,
       plan: null,
+      briefs: {},
+      briefEngine: null,
+      verdict: "",
       messages: [
         {
           id: crypto.randomUUID(),
