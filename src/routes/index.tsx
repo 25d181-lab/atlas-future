@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Building2, Sprout, BrainCircuit, GraduationCap, Cpu } from "lucide-react";
+import { Building2, Sprout, BrainCircuit, Cpu } from "lucide-react";
 import { ChatPanel } from "@/components/atlas/ChatPanel";
 import { AgentPipeline } from "@/components/atlas/AgentPipeline";
 import { DigitalTwinPanel } from "@/components/atlas/DigitalTwinPanel";
@@ -12,7 +12,6 @@ import { AdminDashboard } from "@/components/atlas/AdminDashboard";
 import { LanguageSwitcher } from "@/components/atlas/LanguageSwitcher";
 import { FarmIntelligencePanel } from "@/components/atlas/FarmIntelligencePanel";
 import { RegionalIntelligencePanel } from "@/components/atlas/RegionalIntelligencePanel";
-import { SkillsBuildPanel } from "@/components/atlas/SkillsBuildPanel";
 import { useT } from "@/lib/i18n";
 
 
@@ -37,7 +36,7 @@ export const Route = createFileRoute("/")({
   component: AtlasPage,
 });
 
-type View = "farmer" | "intelligence" | "learn" | "admin";
+type View = "farmer" | "intelligence" | "admin";
 
 function AtlasPage() {
   const [view, setView] = useState<View>("farmer");
@@ -67,7 +66,6 @@ function AtlasPage() {
             [
               { id: "farmer", label: tr("farmerView"), icon: Sprout },
               { id: "intelligence", label: tr("intelligenceView"), icon: BrainCircuit },
-              { id: "learn", label: tr("learnView"), icon: GraduationCap },
               { id: "admin", label: tr("adminView"), icon: Building2 },
             ] as const
           ).map((t) => (
@@ -112,8 +110,6 @@ function AtlasPage() {
           <RegionalIntelligencePanel />
           <DigitalTwinPanel />
         </div>
-      ) : view === "learn" ? (
-        <SkillsBuildPanel />
       ) : (
         <AdminDashboard />
       )}
