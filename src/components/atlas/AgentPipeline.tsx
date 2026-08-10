@@ -10,6 +10,7 @@ import {
   Truck,
   Warehouse as WarehouseIcon,
   Handshake,
+  Cpu,
 } from "lucide-react";
 import { AGENTS, type AgentKey } from "@/lib/atlas-agents";
 import { useAtlas } from "@/lib/atlas-store";
@@ -26,7 +27,7 @@ const ICONS: Record<AgentKey, typeof Leaf> = {
 };
 
 export function AgentPipeline() {
-  const { statuses, plan, phase } = useAtlas();
+  const { statuses, plan, phase, briefs, verdict } = useAtlas();
   const tr = useT();
   const done = AGENTS.filter((a) => statuses[a.key] === "done").length;
 
@@ -112,6 +113,15 @@ export function AgentPipeline() {
                           </li>
                         ))}
                       </ul>
+                      {briefs[agent.key] && (
+                        <div className="mt-2 flex gap-2 rounded-lg border border-gold/30 bg-gold/10 p-2.5">
+                          <Cpu className="mt-0.5 size-3.5 shrink-0 text-gold" />
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wide text-gold">{tr("watsonxEngine")}</p>
+                            <p className="text-[12px] leading-relaxed text-foreground">{briefs[agent.key]}</p>
+                          </div>
+                        </div>
+                      )}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {result.metrics.map((m) => (
                           <div key={m.label} className="rounded-lg bg-background/60 px-2.5 py-1.5">
@@ -128,6 +138,16 @@ export function AgentPipeline() {
           );
         })}
       </div>
+
+      {verdict && (
+        <div className="mt-4 flex gap-2 rounded-xl border border-gold/30 bg-gold/10 p-3">
+          <Cpu className="mt-0.5 size-4 shrink-0 text-gold" />
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-gold">{tr("watsonxEngine")}</p>
+            <p className="text-[12px] leading-relaxed text-foreground">{verdict}</p>
+          </div>
+        </div>
+      )}
 
       {phase === "idle" && (
         <p className="mt-4 text-center text-xs text-muted-foreground">
